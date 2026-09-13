@@ -28,6 +28,7 @@ Displays the quick reference help center for all commands available in the **Lin
 | `./bin/linux-wayland-config smart-keyboard-power` | `/smart-keyboard-power` | Dynamic bus power (`on` standalone, `auto` with USB/BT keyboard) | To eliminate Left Ctrl latency/latch without battery waste |
 | `./bin/linux-wayland-config battery-status` | `/battery` | Battery, hybrid GPU, and PCIe ASPM diagnostics (read-only) | To audit power consumption and battery health |
 | `./bin/linux-wayland-config battery-apply` | `/battery` | Applies user-selected battery optimizations | To save power after inspecting diagnostics |
+| `./bin/linux-wayland-config turbo` | `/turbo` | CPU Turbo Boost management, quiet mode & runaway process watchdog | To silence cooling fans, cool down CPU, and detect looping processes |
 | `./bin/linux-wayland-config gestures` | `/configure-gestures` | Configures 3/4-finger touchpad gestures in KWin | To enable smooth workspace swipe and overview gestures |
 | `./bin/linux-wayland-config mouse` | `/configure-mouse` | Configures Logitech MX Master 3S mouse via logiops | To map thumb gesture button and free-spin SmartShift |
 | `./bin/linux-wayland-config test-keyboard` | `/test-keyboard` | Real-time key event monitor | To test whether any physical key is active |
@@ -37,7 +38,7 @@ Displays the quick reference help center for all commands available in the **Lin
 | `./bin/linux-wayland-config upgrade` | `/upgrade` | Checks and applies updates from GitHub and marketplace | To upgrade the suite to the latest release |
 | `./bin/linux-wayland-config rollback` | — | Restores previous configuration snapshot from backup | To revert changes made by the suite |
 | `./bin/linux-wayland-config terminal-fetch` | `/terminal-fetch` | Fastfetch terminal identity menu & logo switch (Eagle, Cat Mokka, Dragon, etc.) | To customize or restore the terminal logo and greeting |
-| `./bin/linux-wayland-config install` | — | Installs suite permanently to `~/.local/share` (independent of worktree) | To ensure commands and hooks persist even if git worktrees are removed |
+| `./bin/linux-wayland-config install` | `/install` | Installs suite permanently and configures PATH across all shells | To run suite commands from any directory |
 
 ---
 

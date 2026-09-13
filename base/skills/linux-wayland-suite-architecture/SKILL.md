@@ -25,12 +25,15 @@ flowchart TD
 
 ### Pillar 1: Canonical Script (`base/shared/<name>.sh` or `.py`)
 - **Location:** Exclusively in `base/shared/`.
+- **Language Selection:**
+  - **Python (`.py`):** Mandatory for hardware/thermal telemetry, `/proc` process table auditing (runaway loops), rich terminal UI/tables, and cross-vendor branching (Intel vs AMD, multi-GPU).
+  - **Shell (`.sh`):** Preferred for sequential binary orchestration (`systemctl`, `udevadm`, `grub-mkconfig`) and hot-path system hooks (`/etc/systemd/system-sleep/`, NetworkManager dispatchers).
+  - **Hybrid Forwarder Pattern:** When implemented in Python, provide both canonical `base/shared/<name>.py` and a thin POSIX forwarder `base/shared/<name>.sh` (`exec python3 "$SCRIPT_DIR/<name>.py" "$@"`) for transparent compatibility.
 - **Minimum Required Interface:**
   - `--apply` (or direct action): applies configuration with atomic pre-execution backup.
   - `--revert` (or `--remove`): reverts changes and restores backup/default.
   - `--status`: displays current feature state.
-- **Fault Tolerance:** Usage of `set -euo pipefail`, dependency validation, and root protection checks.
-
+- **Fault Tolerance:** Usage of `set -euo pipefail` in shell, `try/except` with clean error reporting in Python, dependency validation, and root protection checks.
 ### Pillar 2: CLI Orchestrator (`base/bin/kde-config` / `linux-wayland-config`)
 - Mapped in `usage()` function.
 - Dedicated helper function `cmd_<name>()`.
@@ -136,10 +139,10 @@ flowchart TD
      * `refactor/<slug>`: Code restructuring without interface or behavioral changes.
    - **Main Branch Discipline:** The `main` branch represents tested, production-ready code. Direct chaotic commits are prohibited; merges into `main` must use semantic commit messages (`feat(...)`, `fix(...)`, `chore(...)`).
 9. **Progressive Disclosure & Informed Consent (*Discover $\to$ Contextualize $\to$ Ask $\to$ Execute*):**
-   - No destructive command, root action, or multi-target batch modification may execute blindly without informed user consent:
+   - **User Sovereignty Principle:** Every action that modifies the system (applying power policies, toggling Turbo Boost, installing or enabling systemd services, killing runaway processes, or modifying hardware configuration) **MUST ALWAYS be decided by the user**. AI agents and suite tools MUST NEVER make unilateral assumptions or apply state-changing mutations without explicit interactive consent:
      * **Phase 1 (Silent Discovery):** Inspect the system, hardware, and filesystem non-destructively. Never ask the user what the computer can determine on its own.
-     * **Phase 2 (Contextualization):** Present findings clearly. Explain the *what*, the *why*, and the *how to rollback* in 2–3 concise sentences before applying changes.
-     * **Phase 3 (Consent & Scoping):** When actions carry tradeoffs, multiple targets, or require `sudo`, prompt the user with safe defaults (e.g. apply only to vulnerable targets, ask confirmation before installing persistence hooks).
+     * **Phase 2 (Contextualization):** Present findings clearly with empirical evidence. Explain the *what*, the *why*, the tradeoffs, and the exact rollback steps before offering changes.
+     * **Phase 3 (Consent & Scoping via Interactive Prompts):** Always prompt the user using structured interactive tools (`AskUserQuestion` / `ask` for AI agents, or clear prompts in CLI). Present distinct choices with clear recommendations. The user retains complete authority over what is executed.
      * **Phase 4 (Atomic Execution & Proof):** Execute changes with atomic backups (`.orig`), verify immediately, and report results using the Evidence-First Verdict contract.
      * **Central Portal Entrypoint:** The interactive portal (`linux-wayland-config menu`) embodies Progressive Disclosure by presenting real-time hardware context and clear explanations of every module before execution, allowing users to make informed decisions.
 10. **Terminal Internationalization & Design Tokens (`i18n` & UI System):**
@@ -152,3 +155,53 @@ flowchart TD
      * `MUTED` (`\033[0;90m` / Gray): Long filesystem paths, secondary details.
      * `BORDER` (`\033[2;36m` / Dim Cyan): Unicode box borders and horizontal rules (`────`).
    - **Visible-Width Table Alignment:** Table formatters must calculate visible string width (stripping ANSI escapes) so columns remain mathematically aligned regardless of terminal size, colors, or UTF-8 accents.
+
+---
+
+## 3. Technology Stack & Implementation Language Discipline (Python vs. POSIX Shell)
+
+To prevent architectural degradation and ensure both maximum performance and maintainability, every new script or capability must be evaluated against this decision matrix before writing code.
+
+### 3.1 Decision Matrix
+
+| Capability / Requirement | Recommended Language | Technical Justification |
+| :--- | :--- | :--- |
+| **Hardware / Thermal Telemetry** | **Python 3 (`.py`)** | Direct sysfs traversal (`/sys/class/hwmon`, `/sys/devices/system/cpu/`), regex parsing, floating-point math, and temperature thresholds. |
+| **Process Table & Runaway Auditing** | **Python 3 (`.py`)** | Reading `/proc/[pid]/stat` in memory takes ~15ms. In Bash, chaining `ps | awk | grep | cut` spawns dozens of subshells and consumes CPU to inspect CPU. |
+| **Interactive Portals & Rich Tables** | **Python 3 (`.py`)** | Seamless integration with `lib_suite.py` (`UI` design tokens, `render_table` with visible-width padding, `I18n` catalog). |
+| **Cross-Vendor Hardware Branching** | **Python 3 (`.py`)** | Clean OOP/functional abstractions for Intel (`intel_pstate`) vs AMD (`cpufreq/boost`), multi-GPU topologies (Intel/NVIDIA/AMD). |
+| **Binary Orchestration Pipelines** | **POSIX Shell (`.sh`)** | Running a sequence of native tools (`systemctl`, `udevadm`, `grub-mkconfig`, `patch`, `iw`, `sed`, `cp`). |
+| **Hot-Path System Event Hooks** | **POSIX Shell (`.sh`)** | NetworkManager dispatchers, `systemd-sleep` resume hooks, udev execution helpers. Zero startup overhead, no dependency on python runtime being mounted/ready during early resume. |
+| **Thin CLI Dispatchers** | **POSIX Shell (`.sh`)** | `base/bin/kde-config` entrypoints, preflight bootstrapping before runtime dependencies are verified. |
+
+### 3.2 The Hybrid Wrapper Pattern
+When a tool is implemented in Python:
+1. **Canonical Engine:** `base/shared/<name>.py` contains the complete implementation, business logic, CLI argument parsing, and structured logging.
+2. **POSIX Shell Forwarder:** `base/shared/<name>.sh` wraps the Python script:
+   ```bash
+   #!/usr/bin/env bash
+   set -euo pipefail
+   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+   exec python3 "$SCRIPT_DIR/<name>.py" "$@"
+   ```
+3. **Benefits:** Preserves compatibility with existing Makefiles, shell dispatchers, systemd service units, and POSIX conventions while leveraging Python's full power.
+
+### 3.3 Code Reuse & Library Standards
+- **Python scripts MUST import `lib_suite.py`:**
+  - Use `UI` design tokens for all terminal output (`UI.PRIMARY`, `UI.SUCCESS`, `UI.WARNING`, `UI.DANGER`, `UI.MUTED`, `UI.BORDER`). Never hardcode raw ANSI escapes.
+  - Use `I18n` with dynamic catalogs for bilingual support (`en` and `pt-BR`), auto-resolved by `get_active_language()`.
+  - Use `render_table()` for visible-width table alignment immune to ANSI distortion.
+  - Use `log_event()` for atomic TSV runlog events (`events.tsv`).
+- **Shell scripts MUST source `lib-runlog.sh`:**
+  - Emit structured events via `runlog_event <status> <id> [detail]`.
+  - Enforce `set -euo pipefail`.
+
+### 3.4 Privilege Separation (Root vs Non-Root)
+- **Read-only Inspection:** Must **NEVER** require `sudo` or root privileges. `--status`, `--watch`, and audit commands must inspect sysfs and `/proc` unprivileged.
+- **Privileged Mutation:** Actions modifying `/sys`, writing to `/etc`, or reloading `systemd` (`--apply`, `--persist`, `--remove`) must gracefully check for root privileges and elevate via `sudo` with user notification.
+
+### 3.5 Interactive CLI Ergonomics (Default-on-Enter Contract)
+- When interactive Python scripts present a prompt to the user with a default or recommended option (e.g. `[Y/n]`, `[S/n]`, or a numbered list where item `1` is default):
+  * **Empty input (`<Enter>` / `\n`) MUST immediately select the default option.** The user should never be forced to retype the character or number when agreeing with the recommended choice.
+  * Prompts must visually identify the default (e.g. uppercase letter `[Y/n]` or explicit `[1] (Recommended) [Press Enter]`).
+  * Use standardized prompt helpers from `lib_suite.py` (`prompt_confirm`, `prompt_choice`) across all interactive Python modules to guarantee consistent UX.

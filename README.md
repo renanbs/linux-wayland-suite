@@ -5,7 +5,7 @@
 [![KDE Plasma 6](https://img.shields.io/badge/KDE%20Plasma-6-blue.svg)](https://kde.org/plasma-desktop/)
 [![Wayland Ready](https://img.shields.io/badge/Wayland-Native-success.svg)](https://wayland.freedesktop.org/)
 [![Multi-Harness Plugin](https://img.shields.io/badge/AI%20Harnesses-OMP%20%7C%20Claude%20%7C%20Cursor%20%7C%20Antigravity%20%7C%20OpenCode-purple.svg)](#-installation--ai-tools-integration)
-[![Version](https://img.shields.io/badge/Version-2.11.1-brightgreen.svg)](package.json)
+[![Version](https://img.shields.io/badge/Version-2.12.0-brightgreen.svg)](package.json)
 
 **[English](README.md)** | **[Português do Brasil](README.pt-BR.md)**
 
@@ -30,11 +30,15 @@ Compatible as a native plugin for **Oh My Pi (OMP)**, **Claude Code**, **Cursor 
   - **On AC (Charger):** Automatically disables 802.11 power saving (`power_save off`) and keeps PCIe bus awake (`power/control = on`) for zero latency and rock-solid incoming connections.
   - **On Battery:** Automatically re-enables 802.11 power saving (`power_save on`) and PCIe runtime PM (`power/control = auto`) for maximum battery life.
 
-### 4. Broken `Ctrl+C` / `Ctrl+<key>` Shortcuts in ABNT2 (`br`)
+### 4. CPU Turbo Boost Management & Thermal Watchdog (`turbo`)
+* **Problem:** Laptops with high-TDP processors under sustained load or looping background processes (e.g. hung Chromium/Electron renderers, runaway webviews) lock CPU frequencies at 4.0+ GHz. Power draw climbs to 60W+, triggering aggressive fan noise and temperatures reaching 85°C–90°C.
+* **Fix:** `./bin/linux-wayland-config turbo` provides hardware-agnostic control (Intel `intel_pstate` & AMD `cpufreq/boost`) to toggle between Quiet/Cool mode (base clock, ~50°C, silent fans) and High Performance mode. Includes an in-memory Runaway Watchdog scanning `/proc` in ~15ms to catch looping processes, and an optional systemd boot persistence unit.
+
+### 5. Broken `Ctrl+C` / `Ctrl+<key>` Shortcuts in ABNT2 (`br`)
 * **Problem:** Legacy input method modules (`GTK_IM_MODULE=cedilla` / `QT_IM_MODULE=cedilla`) or running `fcitx5` under Wayland grab the keyboard and swallow Ctrl key combinations across Qt, GTK, and Electron apps.
 * **Fix:** Eliminates legacy IM environment variables and masks the `fcitx5` system autostart.
 
-### 5. Native Cedilla on US-intl (`' + c` $\to$ `ç` in Qt, GTK, Chrome, Orca IDE, Electron)
+### 6. Native Cedilla on US-intl (`' + c` $\to$ `ç` in Qt, GTK, Chrome, Orca IDE, Electron)
 * **OS-Level Problem:** The default `en_US` compose table maps `<dead_acute> <c>` to `ć` (c-acute).
 * **OS-Level Fix (`fix-keyboard`):** Native composition **without any input method**. The system's pt_BR compose table (`/usr/share/X11/locale/pt_BR.UTF-8/Compose`) already maps `<dead_acute> <c>` to `ç`. The suite configures `LC_CTYPE=pt_BR.UTF-8` in `~/.config/environment.d/cedilla.conf` for Qt, GTK, and Konsole.
 * **Chromium/Electron Wayland Problem:** Under native Wayland (`--ozone-platform=wayland`), Chromium and Electron apps bypass `libxkbcommon` and system compose tables, using an internal `ui::CharacterComposer` table that hardcodes `<dead_acute> <c>` $\to$ `ć` (Chromium Issue 40272818).
@@ -46,36 +50,37 @@ Compatible as a native plugin for **Oh My Pi (OMP)**, **Claude Code**, **Cursor 
   - **Google Antigravity Platform & IDE** (`/opt/Antigravity/antigravity`, `/opt/antigravity-ide/antigravity-ide`)
   - **Brave Browser** (`/opt/brave-bin/brave`)
   - **System Electron Runtimes** (`electron37`, `electron39`, `electron40`, `electron42`, `electron43`)
-### 6. Wayland Clipboard Deadlock Repair
+
+### 7. Wayland Clipboard Deadlock Repair
 * **Problem:** Zombie `xsel` processes freeze terminal clipboard pipelines.
 * **Fix:** Cleans hung processes and ensures native `wl-clipboard` (`wl-copy`/`wl-paste`) backend operation.
 
-### 7. Conflict-Free 3 & 4-Finger Touchpad Gestures
+### 8. Conflict-Free 3 & 4-Finger Touchpad Gestures
 * **Fix:** Maps 3-finger (swipe workspaces, overview) and 4-finger gestures complementary to native KWin 1:1 animations via `libinput-gestures` and KWin D-Bus (`qdbus6`).
 
-### 8. Logitech MX Master 3S Button & Scroll Configuration
+### 9. Logitech MX Master 3S Button & Scroll Configuration
 * **Fix:** Installs `logiops`, configures the thumb gesture button for Desktop Grid and Overview, fixes SmartShift free-spin mode, and enables `PerOutputVirtualDesktops=true` for multi-monitor setups.
 
-### 9. Battery & Hybrid GPU Power Diagnostics
+### 10. Battery & Hybrid GPU Power Diagnostics
 * **Fix:** Audits primary GPU compositor selection on Intel/NVIDIA/AMD hybrid laptops, PCIe ASPM policies, PCI runtime power management, and battery health (`battery-status`).
 
-### 10. AI Host Harness Detection & Model Role Profiling
+### 11. AI Host Harness Detection & Model Role Profiling
 * **Fix:** Dynamically detects host agents (OMP, Claude Code, Cursor, Antigravity), maps model roles (Reasoning, Code, Review, Security), and audits environment alignment in real-time.
 
-### 11. Machine Profiling & Modular Setup (`init` & `setup`)
+### 12. Machine Profiling & Modular Setup (`init` & `setup`)
 * **Architecture:** In `v2.2.0+`, `./bin/linux-wayland-config init` (or `scan`) performs safe, 100% non-destructive hardware inspection, saving `~/.config/linux-wayland-suite/machine-profile.json`. `./bin/linux-wayland-config setup` reads this profile and provides a contextual configuration wizard tailored exclusively to your detected hardware.
 
-### 12. Internal Display Refresh Rate Switcher (`screen-hz`)
+### 13. Internal Display Refresh Rate Switcher (`screen-hz`)
 * **Fix:** `./bin/linux-wayland-config screen-hz 60` or `120` switches internal display refresh rate between high refresh rate (120Hz/144Hz) and battery power-saver mode (60Hz, saving ~2W-3W).
 
-### 13. Numbered Interactive Report Engine
+### 14. Numbered Interactive Report Engine
 * **Fix:** Structured event runlogs saved in `~/.local/state/linux-wayland-suite/runs/`. Features interactive selection (`report --select`), indexed viewing (`report 3`), and actionable remediation commands for any warnings.
 
-### 14. Multi-Shell Terminal Visual Identity & Fastfetch Logo Switcher (`terminal-fetch` / `cosmetic`)
+### 15. Multi-Shell Terminal Visual Identity & Fastfetch Logo Switcher (`terminal-fetch` / `cosmetic`)
 * **Problem:** Terminal greetings and logos are hardcoded in distribution files (e.g. Garuda Mokka forcing a pastel cat mascot over the iconic Dr460nized neon eagle, or `.zshrc` hardcoding `--config mokka` while `.bashrc` lacks greeting hooks entirely).
 * **Fix:** `./bin/linux-wayland-config cosmetic` (or `make cosmetic`) provides an interactive menu to choose between the Dr460nized low-poly neon eagle (`garuda-purple.png`), Mokka mascot cat (`mokka-fastfetch.png`), modern hexagonal "G" emblem, classic ASCII dragon, or custom PNG/SVG images. It audits all installed shells (**Fish**, **Zsh**, **Bash**), cleans hardcoded presets, prompts for multi-shell synchronization, and provides atomic user-space rollback (`--revert`).
 
-### 15. Central Interactive Control Portal (`menu`)
+### 16. Central Interactive Control Portal (`menu`)
 * **Problem:** Remembering separate CLI flags or running modules blindly without knowing the current hardware status increases cognitive load and causes accidental misconfigurations.
 * **Fix:** Running `./bin/linux-wayland-config` without arguments in any interactive terminal (or `./bin/linux-wayland-config menu`) launches the Central Control Portal (`portal_menu.py`). It displays a real-time system context card (Hardware, Active KWin Layout, Battery/AC state, and Cedilla patch status) and an intuitive numbered menu with rich module descriptions, non-blocking execution loops, and full bilingual localization (`en` and `pt-BR`).
 ---
@@ -132,6 +137,7 @@ cd ~/src/linux-wayland-suite
 | `linux-wayland-config configure-harness` | — | Configures and syncs AI host harness profile and model roles |
 | `linux-wayland-config battery-status` | `make battery-status` | Read-only battery, hybrid GPU, and PCIe ASPM diagnostic |
 | `linux-wayland-config battery-apply` | `make battery-apply` | Applies user-chosen battery optimizations (`BATTERY_FIX_*`) |
+| `linux-wayland-config turbo` | `make turbo` | CPU Turbo Boost management, quiet mode & runaway process watchdog |
 | `linux-wayland-config gestures` | `make gestures` | Configures 3 & 4-finger touchpad gestures (`libinput-gestures`) |
 | `linux-wayland-config mouse` | `make mouse` | Configures Logitech MX Master 3S thumb button and SmartShift via `logiops` |
 | `linux-wayland-config test-keyboard` | `make test-keyboard` | Real-time interactive key event monitor (`/dev/input/eventX`) |
@@ -144,11 +150,22 @@ cd ~/src/linux-wayland-suite
 | `linux-wayland-config upgrade` | `make upgrade` | Checks and applies updates from GitHub and marketplace |
 | `linux-wayland-config rollback` | `make rollback` | Restores previous configuration snapshot from backup |
 | `linux-wayland-config cosmetic` / `terminal-fetch` | `make cosmetic` / `make terminal-fetch` | Fastfetch terminal identity interactive menu & logo switcher |
-| `linux-wayland-config install` | `make install` | Installs suite permanently to `~/.local/share` (independent of git worktrees) |
+| `linux-wayland-config install` | `make install` / `make install-dev` | Installs suite permanently and configures PATH across all shells |
 | `linux-wayland-config help` | `make help` | Displays full command help manual |
 ---
 
 ## 🤖 Installation & AI Tools Integration
+### Global CLI Installation & PATH Configuration
+To run suite commands (`linux-wayland-config` or `kde-config`) from any directory in your terminal:
+```bash
+# Permanent standalone installation (copies engine to ~/.local/share, independent of git branches):
+make install
+
+# Or development mode (symlinks ~/.local/bin directly to your active git worktree):
+make install-dev
+```
+* Automatically registers `~/.local/bin` into `$PATH` across **Fish** (`~/.config/fish/conf.d/linux-wayland-suite-path.fish`), **Bash** (`~/.bashrc`), **Zsh** (`~/.zshrc`), and **Wayland/PAM** (`~/.config/environment.d/10-local-bin.conf`).
+
 
 ### 1. Oh My Pi (OMP)
 Install directly from the remote marketplace:
@@ -161,7 +178,7 @@ omp plugin install linux-wayland-suite@linux-wayland-suite
 omp plugin marketplace update linux-wayland-suite
 omp plugin upgrade linux-wayland-suite@linux-wayland-suite
 ```
-* **Available Slash Commands:** `/linux-wayland-suite:status`, `/linux-wayland-suite:init`, `/linux-wayland-suite:patch-cedilla`, `/linux-wayland-suite:fix-keyboard`, `/linux-wayland-suite:fix-tongfang`, `/linux-wayland-suite:smart-keyboard-power`, `/linux-wayland-suite:configure-harness`, `/linux-wayland-suite:battery`, `/linux-wayland-suite:report`, `/linux-wayland-suite:help`, `/linux-wayland-suite:upgrade`.
+* **Available Slash Commands:** `/linux-wayland-suite:status`, `/linux-wayland-suite:init`, `/linux-wayland-suite:patch-cedilla`, `/linux-wayland-suite:fix-keyboard`, `/linux-wayland-suite:fix-tongfang`, `/linux-wayland-suite:smart-keyboard-power`, `/linux-wayland-suite:configure-harness`, `/linux-wayland-suite:battery`, `/linux-wayland-suite:turbo`, `/linux-wayland-suite:install`, `/linux-wayland-suite:report`, `/linux-wayland-suite:help`, `/linux-wayland-suite:upgrade`.
 * **Skills:** `skill://linux-wayland-suite`, `skill://linux-wayland-suite-architecture`.
 
 ### 2. Claude Code

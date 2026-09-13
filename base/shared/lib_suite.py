@@ -184,7 +184,7 @@ class I18n:
 
 def log_event(status: str, event_id: str, detail: str = "") -> None:
     """Logs an event to the suite's active run directory if available."""
-    run_dir = os.environ.get("KDE_SUITE_RUN_DIR")
+    run_dir = os.environ.get("RUNLOG_DIR") or os.environ.get("KDE_SUITE_RUN_DIR")
     if not run_dir or not os.path.isdir(run_dir):
         return
 
@@ -282,3 +282,63 @@ def check_binary_status(bin_path: str) -> Tuple[str, int]:
         return ("INELIGIBLE", 0)
     except Exception:
         return ("ERROR", 0)
+
+# ==============================================================================
+# 5. Interactive CLI Ergonomics Helpers (Default-on-Enter Contract)
+# ==============================================================================
+
+def prompt_confirm(question: str, default: bool = True, lang: Optional[str] = None) -> bool:
+    """
+    Prompts the user with a Yes/No question where pressing <Enter> immediately
+    selects the default value without requiring the user to retype it.
+    """
+    active_lang = lang or get_active_language()
+    hint = "[Y/n]" if default else "[y/N]"
+    if active_lang == "pt-BR":
+        hint = "[S/n]" if default else "[s/N]"
+
+    prompt_str = f"{UI.BOLD}{question}{UI.RESET} {UI.PRIMARY}{hint}{UI.RESET}: "
+    try:
+        ans = input(prompt_str).strip().lower()
+    except (KeyboardInterrupt, EOFError):
+        print("")
+        return False
+
+    if not ans:
+        return default
+
+    if active_lang == "pt-BR":
+        return ans in ("s", "sim", "y", "yes")
+    return ans in ("y", "yes", "s", "sim")
+
+def prompt_choice(question: str, options: List[str], default_index: int = 0, lang: Optional[str] = None) -> int:
+    """
+    Presents a numbered choice list to the user where pressing <Enter> immediately
+    selects the default option (default_index, 0-based).
+    """
+    active_lang = lang or get_active_language()
+    print(f"\n{UI.BOLD}{question}{UI.RESET}")
+    for idx, opt in enumerate(options):
+        is_default = (idx == default_index)
+        def_tag = f" {UI.PRIMARY}({'Padrão - Pressione Enter' if active_lang == 'pt-BR' else 'Default - Press Enter'}){UI.RESET}" if is_default else ""
+        num_color = UI.PRIMARY if is_default else UI.MUTED
+        print(f"  {num_color}[{idx + 1}]{UI.RESET} {opt}{def_tag}")
+
+    prompt_str = f"\n{UI.CYAN}> {'Escolha [1-' if active_lang == 'pt-BR' else 'Select [1-'}{len(options)}] (Enter = {default_index + 1}): {UI.RESET}"
+    try:
+        ans = input(prompt_str).strip()
+    except (KeyboardInterrupt, EOFError):
+        print("")
+        return default_index
+
+    if not ans:
+        return default_index
+
+    try:
+        val = int(ans)
+        if 1 <= val <= len(options):
+            return val - 1
+    except ValueError:
+        pass
+
+    return default_index

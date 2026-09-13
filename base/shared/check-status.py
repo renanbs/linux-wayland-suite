@@ -153,6 +153,23 @@ def audit_stage1():
             print(f"  • {UI.SUCCESS}[OK]{UI.RESET} Gancho de Retorno de Suspensão (Lid Open / Wake): {UI.BOLD}ATIVO{UI.RESET} (systemd-sleep)." if i18n.lang == "pt-BR" else f"  • {UI.SUCCESS}[OK]{UI.RESET} Sleep Resume Hook (Lid Open / Wake): {UI.BOLD}ACTIVE{UI.RESET} (systemd-sleep).")
             log_event("ok", "keyboard_resume_hook_active")
 
+    # CPU Turbo Boost & Thermals
+    intel_no_turbo = "/sys/devices/system/cpu/intel_pstate/no_turbo"
+    amd_boost = "/sys/devices/system/cpu/cpufreq/boost"
+    t_state = None
+    if os.path.exists(intel_no_turbo):
+        t_state = (read_file(intel_no_turbo) != "1")
+    elif os.path.exists(amd_boost):
+        t_state = (read_file(amd_boost) == "1")
+
+    if t_state is not None:
+        t_label = "ATIVO (Alto Desempenho / Aquecimento rápido)" if t_state else "DESATIVADO (Silencioso / Frio)"
+        if i18n.lang == "en":
+            t_label = "ACTIVE (High Performance / Increased heat)" if t_state else "DISABLED (Quiet / Cool)"
+        turbo_status_tag = f"{UI.PRIMARY}[INFO]{UI.RESET}" if t_state else f"{UI.SUCCESS}[OK]{UI.RESET}"
+        print(f"  • {turbo_status_tag} CPU Turbo Boost: {UI.BOLD}{t_label}{UI.RESET} (altere com: {UI.BOLD}./bin/linux-wayland-config turbo{UI.RESET})." if i18n.lang == "pt-BR" else f"  • {turbo_status_tag} CPU Turbo Boost: {UI.BOLD}{t_label}{UI.RESET} (manage via: {UI.BOLD}./bin/linux-wayland-config turbo{UI.RESET}).")
+        log_event("info", "turbo_boost_status", f"active={t_state}")
+
 
 def audit_stage2():
     print(f"\n{UI.BOLD}{i18n.t('sec2_im')}{UI.RESET}")

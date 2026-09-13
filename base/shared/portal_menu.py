@@ -59,6 +59,11 @@ STRINGS = {
         "en": "Audit battery health, hybrid GPU (KWin DRM), PCIe ASPM, and PCI runtime PM",
         "pt-BR": "Audita saúde da bateria, GPU primária (KWin DRM), PCIe ASPM e runtime PM",
     },
+    "m_turbo_title": {"en": "CPU Turbo Boost & Watchdog", "pt-BR": "Turbo Boost e Watchdog Térmico"},
+    "m_turbo_desc": {
+        "en": "Thermal control, quiet mode, and runaway process monitor",
+        "pt-BR": "Controle térmico, modo silencioso e caçador de processos em loop",
+    },
     "m_report_title": {"en": "Execution Reports & History", "pt-BR": "Relatórios e Histórico de Runs"},
     "m_report_desc": {
         "en": "Inspect previous runs, balance of warnings/failures, and metric trends",
@@ -81,8 +86,8 @@ STRINGS = {
     },
     "m_quit": {"en": "Exit Portal", "pt-BR": "Sair do Portal"},
     "prompt_choice": {
-        "en": "Choose an option [1-8 or Q]: ",
-        "pt-BR": "Escolha uma opção [1-8 ou Q]: ",
+        "en": "Choose an option [1-9 or Q]: ",
+        "pt-BR": "Escolha uma opção [1-9 ou Q]: ",
     },
     "return_prompt": {
         "en": "Press Enter to return to main menu (or 'Q' to quit): ",
@@ -129,6 +134,25 @@ def get_system_summary() -> Dict[str, str]:
                 summary["power"] = src
         except Exception:
             pass
+    # Turbo Boost Status
+    try:
+        intel_no_turbo = "/sys/devices/system/cpu/intel_pstate/no_turbo"
+        amd_boost = "/sys/devices/system/cpu/cpufreq/boost"
+        t_state = None
+        if os.path.exists(intel_no_turbo):
+            val = open(intel_no_turbo, "r").read().strip()
+            t_state = "OFF" if val == "1" else "ON"
+        elif os.path.exists(amd_boost):
+            val = open(amd_boost, "r").read().strip()
+            t_state = "ON" if val == "1" else "OFF"
+        if t_state:
+            turbo_label = "Turbo OFF (Silencioso)" if t_state == "OFF" else "Turbo ON"
+            if i18n.lang == "en":
+                turbo_label = "Turbo OFF (Quiet)" if t_state == "OFF" else "Turbo ON"
+            summary["power"] += f" | {turbo_label}"
+    except Exception:
+        pass
+
 
     # Layout from D-Bus
     for qdbus_bin in ("qdbus6", "qdbus", "/usr/lib/qt6/bin/qdbus"):
@@ -196,10 +220,11 @@ def main():
             ("2", i18n.t("m_setup_title"), "setup", i18n.t("m_setup_desc")),
             ("3", i18n.t("m_cedilla_title"), "patch-cedilla", i18n.t("m_cedilla_desc")),
             ("4", i18n.t("m_battery_title"), "battery-status", i18n.t("m_battery_desc")),
-            ("5", i18n.t("m_report_title"), "report", i18n.t("m_report_desc")),
-            ("6", i18n.t("m_scan_title"), "scan", i18n.t("m_scan_desc")),
-            ("7", i18n.t("m_switch_title"), "switch", i18n.t("m_switch_desc")),
-            ("8", i18n.t("m_fetch_title"), "cosmetic", i18n.t("m_fetch_desc")),
+            ("5", i18n.t("m_turbo_title"), "turbo", i18n.t("m_turbo_desc")),
+            ("6", i18n.t("m_report_title"), "report", i18n.t("m_report_desc")),
+            ("7", i18n.t("m_scan_title"), "scan", i18n.t("m_scan_desc")),
+            ("8", i18n.t("m_switch_title"), "switch", i18n.t("m_switch_desc")),
+            ("9", i18n.t("m_fetch_title"), "cosmetic", i18n.t("m_fetch_desc")),
         ]
 
         for num, title, cmd_tag, desc in options:
@@ -227,12 +252,14 @@ def main():
         elif choice == "4":
             run_cmd("battery-status")
         elif choice == "5":
-            run_cmd("report")
+            run_cmd("turbo")
         elif choice == "6":
-            run_cmd("scan")
+            run_cmd("report")
         elif choice == "7":
-            run_cmd("switch")
+            run_cmd("scan")
         elif choice == "8":
+            run_cmd("switch")
+        elif choice == "9":
             run_cmd("cosmetic")
         else:
             print(f"{UI.WARNING}Opção inválida: {choice}{UI.RESET}")

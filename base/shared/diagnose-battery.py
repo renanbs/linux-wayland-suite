@@ -308,9 +308,71 @@ def audit_cpu():
         except Exception:
             pass
 
-    print(f"  • Governor: {UI.BOLD}{gov}{UI.RESET} | Perfil de energia: {UI.BOLD}{prof}{UI.RESET}" if i18n.lang == "pt-BR" else f"  • Scaling Governor: {UI.BOLD}{gov}{UI.RESET} | Power Profile: {UI.BOLD}{prof}{UI.RESET}")
-    log_event("info", "cpu_governor", f"{gov} / {prof}")
+    # 1. Turbo Boost check
+    intel_no_turbo = "/sys/devices/system/cpu/intel_pstate/no_turbo"
+    amd_boost = "/sys/devices/system/cpu/cpufreq/boost"
+    turbo_state = None
+    if os.path.exists(intel_no_turbo):
+        turbo_state = (read_file(intel_no_turbo) != "1")
+    elif os.path.exists(amd_boost):
+        turbo_state = (read_file(amd_boost) == "1")
 
+    turbo_msg = f"{UI.PRIMARY}[INFO]{UI.RESET} Turbo Boost: N/A"
+    if turbo_state is True:
+        turbo_msg = (
+            f"  • {UI.WARNING}[INFO]{UI.RESET} Turbo Boost: ATIVO (Alto Desempenho / Aquecimento rápido)."
+            if i18n.lang == "pt-BR"
+            else f"  • {UI.WARNING}[INFO]{UI.RESET} Turbo Boost: ACTIVE (High Performance / Increased heat)."
+        )
+    elif turbo_state is False:
+        turbo_msg = (
+            f"  • {UI.SUCCESS}[OK]{UI.RESET} Turbo Boost: DESATIVADO (Modo Silencioso / Baixo consumo)."
+            if i18n.lang == "pt-BR"
+            else f"  • {UI.SUCCESS}[OK]{UI.RESET} Turbo Boost: DISABLED (Quiet / Cool mode)."
+        )
+
+    # 2. Temperature check
+    pkg_temp = 0.0
+    for h in glob.glob("/sys/class/hwmon/hwmon*"):
+        name = read_file(os.path.join(h, "name"))
+        if name in ("coretemp", "k10temp", "zenpower", "cpu_thermal"):
+            for t in glob.glob(os.path.join(h, "temp*_input")):
+                try:
+                    val = float(read_file(t, "0")) / 1000.0
+                    if val > pkg_temp:
+                        pkg_temp = val
+                except ValueError:
+                    pass
+
+    temp_msg = ""
+    if pkg_temp > 0:
+        if pkg_temp >= 78.0:
+            temp_msg = (
+                f"  • {UI.DANGER}[ALERTA]{UI.RESET} Temperatura da CPU elevada: {UI.BOLD}{pkg_temp:.1f}°C{UI.RESET} (Coolers acionados no máximo)."
+                if i18n.lang == "pt-BR"
+                else f"  • {UI.DANGER}[ALERT]{UI.RESET} Elevated CPU temperature: {UI.BOLD}{pkg_temp:.1f}°C{UI.RESET} (Fans triggered)."
+            )
+            log_event("warn", "cpu_temp_high", f"{pkg_temp}C")
+        elif pkg_temp >= 62.0:
+            temp_msg = (
+                f"  • {UI.WARNING}[AVISO]{UI.RESET} Temperatura da CPU moderada: {UI.BOLD}{pkg_temp:.1f}°C{UI.RESET}."
+                if i18n.lang == "pt-BR"
+                else f"  • {UI.WARNING}[WARN]{UI.RESET} Moderate CPU temperature: {UI.BOLD}{pkg_temp:.1f}°C{UI.RESET}."
+            )
+            log_event("info", "cpu_temp_moderate", f"{pkg_temp}C")
+        else:
+            temp_msg = (
+                f"  • {UI.SUCCESS}[OK]{UI.RESET} Temperatura da CPU controlada: {UI.BOLD}{pkg_temp:.1f}°C{UI.RESET} (Frio/Silencioso)."
+                if i18n.lang == "pt-BR"
+                else f"  • {UI.SUCCESS}[OK]{UI.RESET} Controlled CPU temperature: {UI.BOLD}{pkg_temp:.1f}°C{UI.RESET} (Cool/Quiet)."
+            )
+            log_event("ok", "cpu_temp_normal", f"{pkg_temp}C")
+
+    print(f"  • Governor: {UI.BOLD}{gov}{UI.RESET} | Perfil de energia: {UI.BOLD}{prof}{UI.RESET}" if i18n.lang == "pt-BR" else f"  • Scaling Governor: {UI.BOLD}{gov}{UI.RESET} | Power Profile: {UI.BOLD}{prof}{UI.RESET}")
+    if temp_msg:
+        print(temp_msg)
+    print(turbo_msg)
+    log_event("info", "cpu_governor", f"{gov} / {prof}")
 
 def main():
     print(render_banner(i18n.t("banner_title")))

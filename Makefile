@@ -1,4 +1,4 @@
-.PHONY: all menu init scan profile setup report status check fix-keyboard patch-cedilla fix-tongfang revert-tongfang test-keyboard monitor-irq smart-keyboard-power smart-wifi-power wifi-power screen-hz screen-60 screen-120 configure-harness set-lang gestures mouse battery-status battery-apply battery-revert switch-br switch-us shortcut-switch rollback upgrade update install install-cli install-dev preflight terminal-fetch cosmetic help
+.PHONY: all menu init scan profile setup report status check fix-keyboard patch-cedilla fix-tongfang revert-tongfang test-keyboard monitor-irq smart-keyboard-power smart-wifi-power wifi-power screen-hz screen-60 screen-120 configure-harness set-lang gestures mouse battery-status battery-apply battery-revert turbo turbo-status turbo-on turbo-off turbo-toggle turbo-persist turbo-watch switch-br switch-us shortcut-switch rollback upgrade update install install-cli install-dev preflight terminal-fetch cosmetic help
 
 all: status
 
@@ -42,6 +42,13 @@ help:
 	@echo "  make battery-status  - Battery and power diagnostics (read-only)"
 	@echo "  make battery-apply   - Applies battery optimizations (use BATTERY_FIX_*=1; ask user first)"
 	@echo "  make battery-revert  - Reverts the last battery-apply execution"
+	@echo "  make turbo           - Interactive CPU Turbo Boost management and runaway watchdog"
+	@echo "  make turbo-status    - Displays current Turbo Boost, frequency and thermal status"
+	@echo "  make turbo-off       - Disables Turbo Boost (quiet, cool, low fan noise)"
+	@echo "  make turbo-on        - Enables Turbo Boost (maximum throughput)"
+	@echo "  make turbo-toggle    - Toggles Turbo Boost state"
+	@echo "  make turbo-persist   - Installs systemd service to enforce current Turbo state on boot"
+	@echo "  make turbo-watch     - Runs runaway process watchdog (>30% CPU)"
 	@echo "  make preflight       - Runs environment, distribution and D-Bus tool diagnostics"
 	@echo "  make switch-br       - Switches active layout to ABNT2 (br)"
 	@echo "  make switch-us       - Switches active layout to US-intl (us)"
@@ -110,6 +117,27 @@ battery-apply:
 battery-revert:
 	@./bin/kde-config battery-revert
 
+
+turbo:
+	@./bin/kde-config turbo
+
+turbo-status:
+	@./bin/kde-config turbo-status
+
+turbo-on:
+	@./bin/kde-config turbo-on
+
+turbo-off:
+	@./bin/kde-config turbo-off
+
+turbo-toggle:
+	@./bin/kde-config turbo-toggle
+
+turbo-persist:
+	@./bin/kde-config turbo-persist
+
+turbo-watch:
+	@./bin/kde-config turbo-watch
 preflight:
 	@./bin/kde-config preflight
 

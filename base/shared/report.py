@@ -146,6 +146,14 @@ def get_recommendation(event_id: str, detail: str) -> str:
             "en": f"{UI.DANGER}Legacy IM Config:{UI.RESET} run '{UI.BOLD}./bin/linux-wayland-config fix-keyboard{UI.RESET}'",
             "pt-BR": f"{UI.DANGER}Configuração Legada de IM:{UI.RESET} execute '{UI.BOLD}./bin/linux-wayland-config fix-keyboard{UI.RESET}'",
         },
+        "cpu_temp_high": {
+            "en": f"{UI.DANGER}CPU Overheating:{UI.RESET} High CPU temperature detected. Check runaway processes and consider disabling Turbo: '{UI.BOLD}./bin/linux-wayland-config turbo{UI.RESET}'",
+            "pt-BR": f"{UI.DANGER}Superaquecimento de CPU:{UI.RESET} Temperatura elevada detectada. Verifique processos em loop e desative o Turbo Boost: '{UI.BOLD}./bin/linux-wayland-config turbo{UI.RESET}'",
+        },
+        "cpu_runaway_detected": {
+            "en": f"{UI.WARNING}Runaway Process Loop:{UI.RESET} Inspect and terminate runaway processes: '{UI.BOLD}./bin/linux-wayland-config turbo --watch{UI.RESET}'",
+            "pt-BR": f"{UI.WARNING}Processo em Loop Infinito:{UI.RESET} Inspecione e encerre processos em loop: '{UI.BOLD}./bin/linux-wayland-config turbo --watch{UI.RESET}'",
+        },
     }
 
     if event_id in recs:

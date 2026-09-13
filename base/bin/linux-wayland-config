@@ -52,6 +52,7 @@ usage() {
     echo "  battery-status    Battery and power consumption diagnostics (GPU, PCIe ASPM, health)"
     echo "  battery-apply     Applies user-chosen battery optimizations (BATTERY_FIX_*)"
     echo "  battery-revert    Reverts the last battery-apply execution (or specific snapshot)"
+    echo "  turbo [on|off|status|toggle|persist|watch]  CPU Turbo Boost & thermal management"
     echo "  smart-wifi-power  Dynamic Wi-Fi power management (AC vs Battery) (--apply/--remove/--sync/--status)"
     echo "  screen-hz [60|120|max]  Switches internal display refresh rate (60 Hz vs 120 Hz)"
     echo "  fix-tongfang      Unlocks i8042 keyboard matrix in GRUB for Tongfang/Avell laptops"
@@ -155,6 +156,17 @@ cmd_battery_revert() {
         bash "$SHARED_DIR/revert-battery.sh" "${1:-}"
     else
         echo -e "${RED}Erro: $SHARED_DIR/revert-battery.sh não encontrado.${NC}"
+        exit 1
+    fi
+}
+
+cmd_turbo() {
+    if [ -f "$SHARED_DIR/manage-cpu-turbo.py" ]; then
+        python3 "$SHARED_DIR/manage-cpu-turbo.py" "$@"
+    elif [ -f "$SHARED_DIR/manage-cpu-turbo.sh" ]; then
+        bash "$SHARED_DIR/manage-cpu-turbo.sh" "$@"
+    else
+        echo -e "${RED}Erro: $SHARED_DIR/manage-cpu-turbo.py não encontrado.${NC}"
         exit 1
     fi
 }
@@ -454,7 +466,9 @@ cmd_install() {
     # Instalação permanente independente de worktree
     local dest_dir="$HOME/.local/share/linux-wayland-suite"
     echo -e "${BOLD}==> Instalando linux-wayland-suite de forma permanente em $dest_dir...${NC}"
+    rm -rf "$dest_dir/bin" "$dest_dir/shared" "$dest_dir/commands"
     mkdir -p "$dest_dir/bin" "$dest_dir/shared" "$dest_dir/commands"
+
     # Copia arquivos canônicos
     local bin_src="$BASE_DIR"
     local shared_src="$SHARED_DIR"
@@ -480,9 +494,48 @@ cmd_install() {
         done
     fi
 
-    echo -e "${GREEN}✔ Instalação permanente concluída!${NC}"
-    echo "A suíte agora é independente de qualquer worktree ou branch do git."
-    echo "Certifique-se de que ~/.local/bin está no seu PATH."
+    # -------------------------------------------------------------------------
+    # Configuração de PATH nos shells do usuário (Fish, Bash, Zsh, Wayland/PAM)
+    # -------------------------------------------------------------------------
+    mkdir -p "$HOME/.config/environment.d"
+    local env_path_conf="$HOME/.config/environment.d/10-local-bin.conf"
+    if [ ! -f "$env_path_conf" ] || ! grep -q "local/bin" "$env_path_conf" 2>/dev/null; then
+        echo 'PATH=$HOME/.local/bin:$PATH' > "$env_path_conf"
+        echo -e "${GREEN}✔ Configurado environment.d: $env_path_conf (persistência Wayland/PAM)${NC}"
+    fi
+
+    # Fish Shell
+    if command -v fish >/dev/null 2>&1 || [ -d "$HOME/.config/fish" ]; then
+        mkdir -p "$HOME/.config/fish/conf.d"
+        local fish_path_conf="$HOME/.config/fish/conf.d/linux-wayland-suite-path.fish"
+        cat << 'EOF' > "$fish_path_conf"
+# Linux Wayland Suite — Garante ~/.local/bin no PATH do Fish
+if test -d "$HOME/.local/bin"
+    fish_add_path -g $HOME/.local/bin
+end
+EOF
+        echo -e "${GREEN}✔ Configurado Fish Shell: $fish_path_conf${NC}"
+    fi
+
+    # Bash
+    if [ -f "$HOME/.bashrc" ] && ! grep -q "local/bin" "$HOME/.bashrc" 2>/dev/null; then
+        echo '[[ ":$PATH:" != *":$HOME/.local/bin:"* ]] && export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+        echo -e "${GREEN}✔ Configurado Bash: ~/.bashrc${NC}"
+    fi
+
+    # Zsh
+    if [ -f "$HOME/.zshrc" ] && ! grep -q "local/bin" "$HOME/.zshrc" 2>/dev/null; then
+        echo '[[ ":$PATH:" != *":$HOME/.local/bin:"* ]] && export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
+        echo -e "${GREEN}✔ Configurado Zsh: ~/.zshrc${NC}"
+    fi
+
+    echo ""
+    echo -e "${GREEN}✔ Instalação permanente concluída com sucesso!${NC}"
+    echo -e "Comandos disponíveis em qualquer terminal/diretório:"
+    echo -e "  • ${BOLD}linux-wayland-config${NC} (ou ${BOLD}kde-config${NC})"
+    echo -e "  • ${BOLD}linux-wayland-config status${NC}"
+    echo -e "  • ${BOLD}linux-wayland-config turbo${NC}"
+    echo -e "  • ${BOLD}linux-wayland-config menu${NC}"
 }
 cmd_report() {
     if [ -f "$SHARED_DIR/report.py" ]; then
@@ -546,6 +599,13 @@ dispatch() {
         battery-apply) cmd_battery_apply ;;
         battery-revert) cmd_battery_revert "${2:-}" ;;
         preflight) cmd_preflight ;;
+        turbo|cpu-turbo) shift; cmd_turbo "$@" ;;
+        turbo-on) cmd_turbo "--on" ;;
+        turbo-off) cmd_turbo "--off" ;;
+        turbo-status) cmd_turbo "--status" ;;
+        turbo-toggle) cmd_turbo "--toggle" ;;
+        turbo-persist) cmd_turbo "--persist" ;;
+        turbo-watch|watchdog) cmd_turbo "--watch" ;;
         switch) cmd_switch_layout "${2:-next}" ;;
         shortcut-switch) cmd_shortcut_switch ;;
         rollback) cmd_rollback ;;

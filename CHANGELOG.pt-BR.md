@@ -5,6 +5,18 @@ Todas as alterações notáveis deste projeto serão documentadas neste arquivo.
 O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico (SemVer)](https://semver.org/lang/pt-BR/).
 
+## [2.12.1] - 2026-09-13
+
+### Corrigido
+- **Integração no Perfil da Máquina (`/init` & `profile-machine.py`)**:
+  - Adicionada etapa `[2/6]` para auditoria de CPU, Turbo Boost e telemetria térmica em tempo real.
+  - Persistido bloco estruturado `"cpu"` em `~/.config/linux-wayland-suite/machine-profile.json` (fabricante, modelo, driver, governor, turbo_supported, turbo_active, package_temp_c, persistence_enabled).
+- **Integração no Assistente de Configuração (`/setup` & `setup-suite.py`)**:
+  - Registrado CPU Turbo Boost & Modo Silencioso como opção `T` no assistente interativo contextual.
+  - Adicionada flag `--turbo` (`--cpu-turbo`, `-t`) para automação e execuções em lote.
+- **Governança Arquitetural (`SKILL.md` & `OUTPUT-CONTRACT.md`)**:
+  - Atualizado explicitamente o checklist do Pilar 7 na skill de arquitetura e no `OUTPUT-CONTRACT.md` tornando obrigatório que qualquer nova capacidade de hardware seja inspecionada no `/init` (`profile-machine.py` + `machine-profile.json`) e exposta no `/setup` (`setup-suite.py`).
+
 ## [2.12.0] - 2026-09-13
 
 ### Adicionado

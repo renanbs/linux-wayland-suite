@@ -79,6 +79,10 @@ STRINGS = {
         "en": "Terminal Identity        (Fastfetch: Dr460nized Eagle across all shells)",
         "pt-BR": "Identidade do Terminal   (Fastfetch: Águia Dr460nized em todos os shells)",
     },
+    "opt_turbo": {
+        "en": "CPU Turbo & Quiet Mode   (Disables Turbo Boost for silent cooling / ~50°C)",
+        "pt-BR": "CPU Turbo / Modo Silêncio (Desativa Turbo Boost para resfriar a CPU / ~50°C)",
+    },
     "opt_all": {
         "en": "Apply All Recommended    (--all)",
         "pt-BR": "Aplicar Todas Recomendadas (--all)",
@@ -204,6 +208,11 @@ def apply_terminal_fetch():
     run_script("terminal-fetch.sh")
     log_event("ok", "setup_terminal_fetch_applied")
 
+def apply_turbo():
+    print(f"{UI.BOLD}==> [Configuração] Gerenciamento de CPU Turbo Boost & Modo Silencioso{UI.RESET}" if i18n.lang == "pt-BR" else f"{UI.BOLD}==> [Setup] CPU Turbo Boost Management & Quiet Mode{UI.RESET}")
+    run_script("manage-cpu-turbo.py", ["--interactive"])
+    log_event("ok", "setup_turbo_applied")
+
 
 def apply_all_detected(profile: Dict[str, Any]):
     apply_keyboard()
@@ -292,6 +301,12 @@ def show_interactive_menu(profile: Dict[str, Any]):
     if shutil.which("fastfetch"):
         print(f" 10) {UI.SUCCESS}{i18n.t('opt_fetch')}{UI.RESET}")
 
+    cpu_info = profile.get("cpu", {})
+    if cpu_info.get("turbo_supported"):
+        t_active = cpu_info.get("turbo_active")
+        t_tag = f" {UI.WARNING}[{ 'ATIVO' if i18n.lang == 'pt-BR' else 'ACTIVE' }]{UI.RESET}" if t_active else f" {UI.SUCCESS}[{ 'DESATIVADO' if i18n.lang == 'pt-BR' else 'DISABLED' }]{UI.RESET}"
+        print(f"  T) {UI.SUCCESS}{i18n.t('opt_turbo')}{UI.RESET}{t_tag}")
+
     print(f"  A) {UI.PRIMARY}{i18n.t('opt_all')}{UI.RESET}")
     print(f"  Q) {i18n.t('opt_quit')}\n")
 
@@ -331,6 +346,8 @@ def show_interactive_menu(profile: Dict[str, Any]):
         apply_tongfang()
     elif ans == "10":
         apply_terminal_fetch()
+    elif ans.lower() == "t":
+        apply_turbo()
 
 
 def main():
@@ -366,6 +383,8 @@ def main():
             apply_tongfang()
         elif flag in ("--terminal-fetch", "--cosmetic"):
             apply_terminal_fetch()
+        elif flag in ("--turbo", "--cpu-turbo", "-t"):
+            apply_turbo()
         elif flag in ("--help", "-h"):
             print(f"Usage: {sys.argv[0]} [--all | --keyboard | --patch-cedilla | --autoheal | --wifi-power | ...]")
             return 0

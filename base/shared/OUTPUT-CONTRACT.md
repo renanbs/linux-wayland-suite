@@ -47,7 +47,7 @@ Every command response must be presented in this structured format:
 | **4. Structured Events** | `lib-runlog` / `lib_suite` | `log_event()` calls emitting to `events.tsv` | `[✅ / N/A]` |
 | **5. Health Audit** | `check-status` | Verified in `base/shared/check-status.py` | `[✅ / N/A]` |
 | **6. AI Command Spec** | `base/commands/` | `commands/<name>.md` + all platform symlinks | `[✅ / N/A]` |
-| **7. Dual Documentation** | READMEs & `/help` | `README.md` (Section + Table) + `README.pt-BR.md` + `help.md` | `[✅ / N/A]` |
+| **7. Central Integration** | `/init`, `/setup`, `/help`, `/report`, READMEs | `profile-machine.py` (`machine-profile.json`), `setup-suite.py`, `help.md`, `report.py`, `README.md` + `README.pt-BR.md` | `[✅ / N/A]` |
 ---
 
 #### 💡 Daily Impact & Practical Benefits:

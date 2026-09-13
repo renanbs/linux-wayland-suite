@@ -1,6 +1,6 @@
 {
   "name": "linux-wayland-suite",
-  "version": "2.12.0",
+  "version": "2.12.1",
   "description": "Comprehensive Linux Wayland configuration plugin for KDE Plasma, GNOME, and multi-vendor hardware: keyboard shortcuts repair, Tongfang/Avell/Clevo matrix unlocking, smart dynamic keyboard power management, native cedilla on US-intl, Wayland clipboard repair, touchpad gestures, Logitech MX Master 3S via logiops, and battery/energy diagnostics.",
   "author": {
     "name": "Renan BS"

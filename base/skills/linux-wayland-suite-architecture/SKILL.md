@@ -72,10 +72,13 @@ flowchart TD
   2. **Evidence-First Verdict Output Contract:** Complete replication of `OUTPUT-CONTRACT.md`.
 - **Relative Symlinks:** Mirrored via relative symlinks into `claude-code/commands/`, `cursor/commands/`, `omp/commands/`, and `antigravity/skills/`.
 
-### Pillar 7: Central `/help`, `/report` and Documentation Synchronization
-- **`/help`:** Insert corresponding row in the command matrix of `base/commands/help.md`.
-- **`report.sh`:** Register `warn`/`fail` event mapping so reports display the exact 1-line fix in `Recommended Actions`.
-- **`README.md` & `README.pt-BR.md`:** Synchronize feature description and CLI reference table across both languages.
+### Pillar 7: Central Integration into `/init`, `/setup`, `/help`, `/report`, and Documentation
+Every capability must be integrated into the central suite lifecycle so it is discoverable, configurable, and maintainable:
+- **`/init` (`base/shared/profile-machine.py`):** Must inspect the new hardware subsystem/state non-destructively and persist the telemetry into `~/.config/linux-wayland-suite/machine-profile.json` under its dedicated JSON key.
+- **`/setup` (`base/shared/setup-suite.py`):** Must expose the optimization in the contextual interactive wizard (with real-time state tag) and register corresponding batch CLI automation flags (`--<feature>`).
+- **`/help` (`base/commands/help.md`):** Insert corresponding row in the command and solutions matrix.
+- **`/report` (`base/shared/report.py`):** Register `warn`/`fail` event mapping so reports display the exact 1-line remediation command in `Recommended Actions`.
+- **Documentation Synchronization (`README.md` & `README.pt-BR.md`):** Synchronize problem/solution descriptions and the CLI/Makefile reference tables across both languages.
 ---
 
 ## 2. The 10 Inviolable Architectural Rules

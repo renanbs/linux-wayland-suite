@@ -15,6 +15,7 @@ Applies targeted system configurations and hardware optimizations based on the m
   * Logitech MX Master 3S configuration (logid)
   * Display 60 Hz power-saver mode
   * Tongfang / Avell keyboard matrix unlock in GRUB
+  * CPU Turbo Boost management & Quiet Mode (disables Turbo for ~50°C and silent cooling)
 
 ```bash
 ./bin/linux-wayland-config setup
@@ -38,6 +39,7 @@ The agent reads `machine-profile.json` and presents only the detected options:
 - **"Set 60 Hz Display Refresh Rate"** — Only if 60 Hz mode is available and battery savings are desired.
 - **"Tongfang / Avell Matrix Unlock (GRUB)"** — Only if Tongfang/Avell chassis is detected.
 - **"Terminal Visual Identity (Fastfetch)"** — Optional (Configures Dr460nized low-poly eagle logo across Fish, Zsh, and Bash).
+- **"CPU Turbo Boost Management & Quiet Mode"** — Recommended if laptop experiences high temperatures or aggressive fan noise (locks CPU to base clock for ~50°C silent operation).
 
 ### Mapping Answers to Command Execution:
 

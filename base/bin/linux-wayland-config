@@ -465,21 +465,20 @@ cmd_install() {
 
     # Instalação permanente independente de worktree
     local dest_dir="$HOME/.local/share/linux-wayland-suite"
-    echo -e "${BOLD}==> Instalando linux-wayland-suite de forma permanente em $dest_dir...${NC}"
-    rm -rf "$dest_dir/bin" "$dest_dir/shared" "$dest_dir/commands"
-    mkdir -p "$dest_dir/bin" "$dest_dir/shared" "$dest_dir/commands"
-
-    # Copia arquivos canônicos
     local bin_src="$BASE_DIR"
     local shared_src="$SHARED_DIR"
     local commands_src="$(realpath "$BASE_DIR/../commands" 2>/dev/null || echo "")"
 
-    cp -a "$bin_src/"* "$dest_dir/bin/"
-    cp -a "$shared_src/"* "$dest_dir/shared/"
-    if [ -n "$commands_src" ] && [ -d "$commands_src" ]; then
-        cp -a "$commands_src/"* "$dest_dir/commands/"
+    echo -e "${BOLD}==> Instalando linux-wayland-suite de forma permanente em $dest_dir...${NC}"
+    if [ "$(realpath "$bin_src" 2>/dev/null)" != "$(realpath "$dest_dir/bin" 2>/dev/null)" ]; then
+        mkdir -p "$dest_dir/bin" "$dest_dir/shared" "$dest_dir/commands"
+        cp -a "$bin_src/." "$dest_dir/bin/"
+        cp -a "$shared_src/." "$dest_dir/shared/"
+        if [ -n "$commands_src" ] && [ -d "$commands_src" ]; then
+            cp -a "$commands_src/." "$dest_dir/commands/"
+        fi
+        chmod +x "$dest_dir/bin/"* "$dest_dir/shared/"*.sh "$dest_dir/shared/"*.py 2>/dev/null || true
     fi
-    chmod +x "$dest_dir/bin/"* "$dest_dir/shared/"*.sh "$dest_dir/shared/"*.py 2>/dev/null || true
 
     local target_bin="$dest_dir/bin/linux-wayland-config"
     for name in linux-wayland-config kde-config wayland-config; do

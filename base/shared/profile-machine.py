@@ -33,8 +33,8 @@ STRINGS = {
         "pt-BR": "Linux Wayland Suite — Machine Profiler & Scan",
     },
     "sec1_sys": {
-        "en": "[1/5] Identifying System, Session, and Environment...",
-        "pt-BR": "[1/5] Identificando Sistema, Sessão e Ambiente...",
+        "en": "[1/6] Identifying System, Session, and Environment...",
+        "pt-BR": "[1/6] Identificando Sistema, Sessão e Ambiente...",
     },
     "lbl_hardware": {"en": "Hardware", "pt-BR": "Hardware"},
     "lbl_board": {"en": "Board", "pt-BR": "Placa"},
@@ -42,9 +42,29 @@ STRINGS = {
     "lbl_session": {"en": "Session", "pt-BR": "Sessão"},
     "lbl_harness": {"en": "Harness", "pt-BR": "Harness"},
     "lbl_lang": {"en": "Language", "pt-BR": "Idioma"},
-    "sec2_power": {
-        "en": "[2/5] Inspecting Battery and Power Management...",
-        "pt-BR": "[2/5] Inspecionando Bateria e Gerenciamento de Energia...",
+    "sec2_cpu": {
+        "en": "[2/6] Inspecting CPU, Turbo Boost, and Thermals...",
+        "pt-BR": "[2/6] Inspecionando CPU, Turbo Boost e Térmica...",
+    },
+    "cpu_model": {
+        "en": "Processor: {model} (Driver: {driver})",
+        "pt-BR": "Processador: {model} (Driver: {driver})",
+    },
+    "cpu_turbo_on": {
+        "en": "Turbo Boost: ACTIVE (High Performance / Increased heat)",
+        "pt-BR": "Turbo Boost: ATIVO (Alto Desempenho / Aquecimento rápido)",
+    },
+    "cpu_turbo_off": {
+        "en": "Turbo Boost: DISABLED (Quiet & Cool mode)",
+        "pt-BR": "Turbo Boost: DESATIVADO (Modo Silencioso / Frio)",
+    },
+    "cpu_temp": {
+        "en": "CPU Package Temperature: {temp}°C",
+        "pt-BR": "Temperatura da CPU: {temp}°C",
+    },
+    "sec3_power": {
+        "en": "[3/6] Inspecting Battery and Power Management...",
+        "pt-BR": "[3/6] Inspecionando Bateria e Gerenciamento de Energia...",
     },
     "bat_present": {
         "en": "Battery: Present | Health: {health}% | Charge: {charge}% ({state})",
@@ -58,9 +78,9 @@ STRINGS = {
         "en": "Current Power Source: {source}",
         "pt-BR": "Fonte de Alimentação Atual: {source}",
     },
-    "sec3_gpu": {
-        "en": "[3/5] Inspecting GPUs and Internal Display...",
-        "pt-BR": "[3/5] Inspecionando Placas de Vídeo e Tela Interna...",
+    "sec4_gpu": {
+        "en": "[4/6] Inspecting GPUs and Internal Display...",
+        "pt-BR": "[4/6] Inspecionando Placas de Vídeo e Tela Interna...",
     },
     "gpu_entry": {
         "en": "GPU: {vendor} ({card}, PCI {pci}, driver {driver})",
@@ -75,25 +95,25 @@ STRINGS = {
         "en": "(Fixed native rate, driver rejects 60 Hz)",
         "pt-BR": "(Taxa nativa fixa, driver rejeita 60 Hz)",
     },
-    "sec4_wifi": {
-        "en": "[4/5] Inspecting Wi-Fi Adapter and Power Management...",
-        "pt-BR": "[4/5] Inspecionando Placa Wi-Fi e Gerenciamento de Energia...",
+    "sec5_wifi": {
+        "en": "[5/6] Inspecting Wi-Fi Adapter and Power Management...",
+        "pt-BR": "[5/6] Inspecionando Placa Wi-Fi e Gerenciamento de Energia...",
     },
     "wifi_none": {
         "en": "Wi-Fi: No wireless network interfaces detected",
         "pt-BR": "Wi-Fi: Nenhuma interface de rede sem fio detectada",
     },
+    "sec6_input": {
+        "en": "[6/6] Inspecting Keyboards, Touchpad, and Input Devices...",
+        "pt-BR": "[6/6] Inspecionando Teclado, Touchpad e Dispositivos de Entrada...",
+    },
     "smart_wifi_active": {
-        "en": "Smart Wi-Fi Power: [ACTIVE] (Automatic AC vs Battery switching installed)",
+        "en": "Smart Wi-Fi Power: [ACTIVE] (Dynamic AC vs Battery switching installed)",
         "pt-BR": "Smart Wi-Fi Power: [ATIVO] (Alternância automática AC vs Bateria instalada)",
     },
     "smart_wifi_inactive": {
         "en": "Smart Wi-Fi Power: [INACTIVE] (Available for setup)",
         "pt-BR": "Smart Wi-Fi Power: [INATIVO] (Disponível para configuração)",
-    },
-    "sec5_input": {
-        "en": "[5/5] Inspecting Keyboards, Touchpad, and Input Devices...",
-        "pt-BR": "[5/5] Inspecionando Teclado, Touchpad e Dispositivos de Entrada...",
     },
     "i8042_bus": {"en": "i8042 Bus: {state}", "pt-BR": "Barramento i8042: {state}"},
     "tongfang_detected": {
@@ -292,8 +312,71 @@ def main():
     print(f"  • {i18n.t('lbl_session')}:   {UI.BOLD}{desktop}{UI.RESET} ({session_type})")
     print(f"  • {i18n.t('lbl_harness')}:  {UI.BOLD}{active_harness}{UI.RESET} ({i18n.t('lbl_lang')}: {active_lang})")
 
-    # 2. Battery & Power
-    print(f"\n{UI.BOLD}{i18n.t('sec2_power')}{UI.RESET}")
+    # 2. CPU, Turbo Boost & Thermals
+    print(f"\n{UI.BOLD}{i18n.t('sec2_cpu')}{UI.RESET}")
+    cpu_vendor = "unknown"
+    cpu_model = "Unknown Processor"
+    try:
+        with open("/proc/cpuinfo", "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("vendor_id") and cpu_vendor == "unknown":
+                    v = line.split(":", 1)[1].strip().lower()
+                    if "intel" in v: cpu_vendor = "intel"
+                    elif "amd" in v: cpu_vendor = "amd"
+                elif line.startswith("model name") and cpu_model == "Unknown Processor":
+                    cpu_model = line.split(":", 1)[1].strip()
+    except Exception:
+        pass
+
+    intel_no_turbo = "/sys/devices/system/cpu/intel_pstate/no_turbo"
+    amd_boost = "/sys/devices/system/cpu/cpufreq/boost"
+    turbo_supported = False
+    turbo_active = None
+    if os.path.exists(intel_no_turbo):
+        turbo_supported = True
+        turbo_active = (read_file(intel_no_turbo) != "1")
+    elif os.path.exists(amd_boost):
+        turbo_supported = True
+        turbo_active = (read_file(amd_boost) == "1")
+
+    pkg_temp = 0.0
+    for h in glob.glob("/sys/class/hwmon/hwmon*"):
+        name = read_file(os.path.join(h, "name"))
+        if name in ("coretemp", "k10temp", "zenpower", "cpu_thermal"):
+            for t in glob.glob(os.path.join(h, "temp*_input")):
+                try:
+                    val = float(read_file(t, "0")) / 1000.0
+                    if val > pkg_temp:
+                        pkg_temp = val
+                except ValueError:
+                    pass
+
+    driver = read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver", "unknown")
+    gov = read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", "unknown")
+    persist = os.path.exists("/etc/systemd/system/linux-wayland-cpu-turbo.service")
+
+    cpu_data = {
+        "vendor": cpu_vendor,
+        "model": cpu_model,
+        "driver": driver,
+        "governor": gov,
+        "turbo_supported": turbo_supported,
+        "turbo_active": turbo_active,
+        "package_temp_c": round(pkg_temp, 1) if pkg_temp > 0 else None,
+        "persistence_enabled": persist,
+    }
+
+    print(f"  • {i18n.t('cpu_model', model=f'{UI.BOLD}{cpu_model}{UI.RESET}', driver=driver)}")
+    if turbo_supported:
+        t_color = UI.WARNING if turbo_active else UI.SUCCESS
+        t_msg = i18n.t("cpu_turbo_on") if turbo_active else i18n.t("cpu_turbo_off")
+        print(f"  • {t_color}[{ 'ATIVO' if turbo_active else 'DESATIVADO' }]{UI.RESET} {t_msg}")
+    if pkg_temp > 0:
+        temp_color = UI.SUCCESS if pkg_temp < 60 else (UI.WARNING if pkg_temp < 75 else UI.DANGER)
+        print(f"  • {i18n.t('cpu_temp', temp=f'{temp_color}{UI.BOLD}{pkg_temp:.1f}{UI.RESET}')}")
+
+    # 3. Battery & Power
+    print(f"\n{UI.BOLD}{i18n.t('sec3_power')}{UI.RESET}")
     has_ac = False
     for p_sup in glob.glob("/sys/class/power_supply/*"):
         t = read_file(os.path.join(p_sup, "type"))
@@ -316,7 +399,7 @@ def main():
         print(f"  • {i18n.t('current_source', source=f'{UI.BOLD}{current_source}{UI.RESET}')}")
 
     # 3. GPUs, Compositor & Internal Display
-    print(f"\n{UI.BOLD}{i18n.t('sec3_gpu')}{UI.RESET}")
+    print(f"\n{UI.BOLD}{i18n.t('sec4_gpu')}{UI.RESET}")
     edp_pci = None
     for st in glob.glob("/sys/class/drm/card*-eDP-*/status"):
         if read_file(st) == "connected":
@@ -367,7 +450,7 @@ def main():
         print(f"  • {i18n.t('display_entry', name=edp_title, hz=hz_disp)}{rej_note}")
 
     # 4. Wi-Fi
-    print(f"\n{UI.BOLD}{i18n.t('sec4_wifi')}{UI.RESET}")
+    print(f"\n{UI.BOLD}{i18n.t('sec5_wifi')}{UI.RESET}")
     wifi_interfaces = []
     smart_wifi_active = os.path.isfile("/etc/udev/rules.d/90-linux-wayland-smart-wifi-power.rules")
 
@@ -406,7 +489,7 @@ def main():
         print(f"  • {UI.MUTED}{i18n.t('wifi_none')}{UI.RESET}")
 
     # 5. Keyboards & Input
-    print(f"\n{UI.BOLD}{i18n.t('sec5_input')}{UI.RESET}")
+    print(f"\n{UI.BOLD}{i18n.t('sec6_input')}{UI.RESET}")
     i8042_present = os.path.exists("/sys/devices/platform/i8042/serio0")
     print(f"  • {i18n.t('i8042_bus', state=(UI.SUCCESS + i18n.t('present') + UI.RESET) if i8042_present else (UI.MUTED + i18n.t('absent') + UI.RESET))}")
 
@@ -468,6 +551,7 @@ def main():
             "chassis_type": chassis_type,
             "is_laptop": is_laptop
         },
+        "cpu": cpu_data,
         "power": {
             "has_battery": bat_data["has_battery"],
             "current_source": current_source,

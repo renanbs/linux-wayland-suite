@@ -6,6 +6,7 @@ description: Non-destructive hardware inspection and machine profiling for Linux
 
 Performs a full, 100% safe and non-destructive inspection of your machine's hardware and environment:
 - Identifies OS, kernel, compositor session, active AI host harness, and language preference.
+- Inspects CPU vendor, model, scaling driver, Turbo Boost state, and package temperature.
 - Inspects power supply, battery health, and charging threshold support.
 - Detects GPUs (iGPU / dGPU), KWin DRM devices, and internal display refresh modes (60 Hz vs high Hz).
 - Detects wireless interfaces (`wlo1`), drivers, 802.11 power saving state, and PCIe bus runtime PM.

@@ -5,7 +5,7 @@
 [![KDE Plasma 6](https://img.shields.io/badge/KDE%20Plasma-6-blue.svg)](https://kde.org/plasma-desktop/)
 [![Wayland Ready](https://img.shields.io/badge/Wayland-Native-success.svg)](https://wayland.freedesktop.org/)
 [![Multi-Harness Plugin](https://img.shields.io/badge/AI%20Harnesses-OMP%20%7C%20Claude%20%7C%20Cursor%20%7C%20Antigravity%20%7C%20OpenCode-purple.svg)](#-instalação-e-integração-com-ferramentas-de-ia)
-[![Versão](https://img.shields.io/badge/Vers%C3%A3o-2.12.0-brightgreen.svg)](package.json)
+[![Versão](https://img.shields.io/badge/Vers%C3%A3o-2.12.1-brightgreen.svg)](package.json)
 
 **[English](README.md)** | **[Português do Brasil](README.pt-BR.md)**
 

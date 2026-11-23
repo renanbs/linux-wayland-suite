@@ -5,7 +5,7 @@ Todas as alterações notáveis deste projeto serão documentadas neste arquivo.
 O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico (SemVer)](https://semver.org/lang/pt-BR/).
 
-## [Unreleased]
+## [2.13.0] - 2026-11-23
 
 ### Adicionado
 - **Sensor de RPM Uniwill/Tongfang (`fan-sensor`)**:

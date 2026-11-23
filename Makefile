@@ -1,4 +1,4 @@
-.PHONY: all menu init scan profile setup report status check fix-keyboard patch-cedilla fix-tongfang revert-tongfang test-keyboard monitor-irq smart-keyboard-power smart-wifi-power wifi-power screen-hz screen-60 screen-120 configure-harness set-lang gestures mouse battery-status battery-apply battery-revert turbo turbo-status turbo-on turbo-off turbo-toggle turbo-persist turbo-watch switch-br switch-us shortcut-switch rollback upgrade update install install-cli install-dev preflight terminal-fetch cosmetic help
+.PHONY: all menu init scan profile setup report status check fix-keyboard patch-cedilla fix-tongfang revert-tongfang test-keyboard monitor-irq smart-keyboard-power smart-wifi-power wifi-power screen-hz screen-60 screen-120 configure-harness set-lang gestures mouse battery-status battery-apply battery-revert fan-sensor fan-sensor-status fan-sensor-install fan-sensor-uninstall turbo turbo-status turbo-on turbo-off turbo-toggle turbo-persist turbo-watch switch-br switch-us shortcut-switch rollback upgrade update install install-cli install-dev preflight terminal-fetch cosmetic help
 
 all: status
 
@@ -42,6 +42,10 @@ help:
 	@echo "  make battery-status  - Battery and power diagnostics (read-only)"
 	@echo "  make battery-apply   - Applies battery optimizations (use BATTERY_FIX_*=1; ask user first)"
 	@echo "  make battery-revert  - Reverts the last battery-apply execution"
+	@echo "  make fan-sensor      - Uniwill/Tongfang fan RPM and temps via read-only hwmon"
+	@echo "  make fan-sensor-status  - Checks sensor support, package and hwmon state"
+	@echo "  make fan-sensor-install - Installs uniwill-ec-hwmon-dkms (AUR) and loads the module"
+	@echo "  make fan-sensor-uninstall - Removes the sensor package and module"
 	@echo "  make turbo           - Interactive CPU Turbo Boost management and runaway watchdog"
 	@echo "  make turbo-status    - Displays current Turbo Boost, frequency and thermal status"
 	@echo "  make turbo-off       - Disables Turbo Boost (quiet, cool, low fan noise)"
@@ -116,6 +120,18 @@ battery-apply:
 
 battery-revert:
 	@./bin/kde-config battery-revert
+
+fan-sensor:
+	@./bin/kde-config fan-sensor
+
+fan-sensor-status:
+	@./bin/kde-config fan-sensor status
+
+fan-sensor-install:
+	@./bin/kde-config fan-sensor install
+
+fan-sensor-uninstall:
+	@./bin/kde-config fan-sensor uninstall
 
 
 turbo:

@@ -29,6 +29,7 @@ Displays the quick reference help center for all commands available in the **Lin
 | `./bin/linux-wayland-config battery-status` | `/battery` | Battery, hybrid GPU, and PCIe ASPM diagnostics (read-only) | To audit power consumption and battery health |
 | `./bin/linux-wayland-config battery-apply` | `/battery` | Applies user-selected battery optimizations | To save power after inspecting diagnostics |
 | `./bin/linux-wayland-config turbo` | `/turbo` | CPU Turbo Boost management, quiet mode & runaway process watchdog | To silence cooling fans, cool down CPU, and detect looping processes |
+| `./bin/linux-wayland-config fan-sensor [status\|install\|uninstall]` | `/fan-sensor` | Read-only fan RPM, CPU/GPU temps and PWM for Uniwill/Tongfang ECs over ACPI-WMI | When `sensors` shows temperatures but no fan RPM on a Tongfang/Avell laptop |
 | `./bin/linux-wayland-config gestures` | `/configure-gestures` | Configures 3/4-finger touchpad gestures in KWin | To enable smooth workspace swipe and overview gestures |
 | `./bin/linux-wayland-config mouse` | `/configure-mouse` | Configures Logitech MX Master 3S mouse via logiops | To map thumb gesture button and free-spin SmartShift |
 | `./bin/linux-wayland-config test-keyboard` | `/test-keyboard` | Real-time key event monitor | To test whether any physical key is active |

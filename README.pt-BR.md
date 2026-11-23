@@ -141,6 +141,7 @@ cd ~/src/linux-wayland-suite
 | `linux-wayland-config battery-status` | `make battery-status` | Diagnóstico de bateria, GPU híbrida e PCIe ASPM (somente leitura) |
 | `linux-wayland-config battery-apply` | `make battery-apply` | Aplica otimizações de bateria escolhidas pelo usuário (`BATTERY_FIX_*`) |
 | `linux-wayland-config turbo` | `make turbo` | Gerenciamento de Turbo Boost, modo silencioso e caçador de processos em loop |
+| `linux-wayland-config fan-sensor [status\|install\|uninstall]` | `make fan-sensor` | RPM das ventoinhas, temperaturas CPU/GPU e PWM para EC Uniwill/Tongfang via ACPI-WMI (DKMS, somente leitura) |
 | `linux-wayland-config gestures` | `make gestures` | Configura gestos de 3 e 4 dedos no touchpad (`libinput-gestures`) |
 | `linux-wayland-config mouse` | `make mouse` | Configura botão de polegar e SmartShift do Logitech MX Master 3S via `logiops` |
 | `linux-wayland-config test-keyboard` | `make test-keyboard` | Monitor interativo de eventos de teclado em tempo real (`/dev/input/eventX`) |
@@ -181,7 +182,7 @@ omp plugin install linux-wayland-suite@linux-wayland-suite
 omp plugin marketplace update linux-wayland-suite
 omp plugin upgrade linux-wayland-suite@linux-wayland-suite
 ```
-* **Comandos Slash Disponíveis:** `/linux-wayland-suite:status`, `/linux-wayland-suite:init`, `/linux-wayland-suite:patch-cedilla`, `/linux-wayland-suite:fix-keyboard`, `/linux-wayland-suite:fix-tongfang`, `/linux-wayland-suite:smart-keyboard-power`, `/linux-wayland-suite:configure-harness`, `/linux-wayland-suite:battery`, `/linux-wayland-suite:turbo`, `/linux-wayland-suite:install`, `/linux-wayland-suite:report`, `/linux-wayland-suite:help`, `/linux-wayland-suite:upgrade`.
+* **Comandos Slash Disponíveis:** `/linux-wayland-suite:status`, `/linux-wayland-suite:init`, `/linux-wayland-suite:patch-cedilla`, `/linux-wayland-suite:fix-keyboard`, `/linux-wayland-suite:fix-tongfang`, `/linux-wayland-suite:smart-keyboard-power`, `/linux-wayland-suite:configure-harness`, `/linux-wayland-suite:battery`, `/linux-wayland-suite:turbo`, `/linux-wayland-suite:fan-sensor`, `/linux-wayland-suite:install`, `/linux-wayland-suite:report`, `/linux-wayland-suite:help`, `/linux-wayland-suite:upgrade`.
 * **Skills:** `skill://linux-wayland-suite`, `skill://linux-wayland-suite-architecture`.
 
 ### 2. Claude Code

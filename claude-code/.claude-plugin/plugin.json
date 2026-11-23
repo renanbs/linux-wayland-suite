@@ -22,6 +22,7 @@
     "./commands/configure-mouse.md",
     "./commands/battery.md",
     "./commands/turbo.md",
+    "./commands/fan-sensor.md",
     "./commands/init.md",
     "./commands/report.md",
     "./commands/install.md"

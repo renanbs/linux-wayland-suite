@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Uniwill/Tongfang Fan RPM Sensor (`fan-sensor`)**:
+  - New `shared/manage-uniwill-hwmon.sh` managing the `uniwill-ec-hwmon-dkms` AUR package: read-only hwmon over the `AcpiTest_MULong` ACPI-WMI bridge for BIOSes without `INOU0000` (where the in-tree `uniwill-laptop` driver cannot probe).
+  - CLI `fan-sensor status|install|uninstall`, Makefile targets, and the `/fan-sensor` command contract.
+  - `/setup` option `F` and `--fan-sensor` flag; `--all` installs it only when the hardware is supported and the sensor is inactive.
+  - `/init` records `uniwill_ec_wmi`, `uniwill_inou0000_present`, `uniwill_hwmon_present` and `uniwill_hwmon_dkms` in `machine-profile.json`.
+  - `/status` audits the sensor state and prints the corrective command.
+
 ## [2.12.1] - 2026-09-13
 
 ### Fixed

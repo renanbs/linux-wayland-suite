@@ -133,6 +133,22 @@ def audit_stage1():
             print(f"  • {UI.WARNING}[AVISO]{UI.RESET} Chassis Tongfang/Avell sem parâmetros i8042/ACPI no boot. Corrija com: {UI.BOLD}./bin/linux-wayland-config fix-tongfang{UI.RESET}")
             log_event("warn", "tongfang_kernel_params_missing")
 
+    # Uniwill EC fan sensor (Tongfang/Avell BIOSes without INOU0000)
+    wmi_dir = "/sys/bus/wmi/devices"
+    wmi_ec = os.path.isdir(wmi_dir) and any(n.startswith("ABBC0F6F-") for n in os.listdir(wmi_dir))
+    inou_present = os.path.isdir("/sys/bus/acpi/devices/INOU0000:00")
+    hwmon_active = any(
+        read_file(os.path.join(h, "name")).strip() == "uniwill_ec"
+        for h in glob.glob("/sys/class/hwmon/hwmon*")
+    )
+    if is_tongfang and wmi_ec and not inou_present:
+        if hwmon_active:
+            print(f"  • {UI.SUCCESS}[OK]{UI.RESET} Sensor de ventoinha Uniwill EC: ATIVO (RPM/temps em hwmon)." if i18n.lang == "pt-BR" else f"  • {UI.SUCCESS}[OK]{UI.RESET} Uniwill EC fan sensor: ACTIVE (RPM/temps in hwmon).")
+            log_event("ok", "uniwill_hwmon_active")
+        else:
+            print(f"  • {UI.PRIMARY}[INFO]{UI.RESET} Sensor de ventoinha Uniwill EC: inativo. Instale com: {UI.BOLD}./bin/linux-wayland-config fan-sensor install{UI.RESET}" if i18n.lang == "pt-BR" else f"  • {UI.PRIMARY}[INFO]{UI.RESET} Uniwill EC fan sensor: inactive. Install with: {UI.BOLD}./bin/linux-wayland-config fan-sensor install{UI.RESET}")
+            log_event("info", "uniwill_hwmon_not_installed")
+
     # Smart Keyboard Power (serio0)
     serio_power = "/sys/devices/platform/i8042/serio0/power/control"
     if os.path.isfile(serio_power):

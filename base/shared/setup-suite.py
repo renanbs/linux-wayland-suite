@@ -83,6 +83,10 @@ STRINGS = {
         "en": "CPU Turbo & Quiet Mode   (Disables Turbo Boost for silent cooling / ~50°C)",
         "pt-BR": "CPU Turbo / Modo Silêncio (Desativa Turbo Boost para resfriar a CPU / ~50°C)",
     },
+    "opt_fansensor": {
+        "en": "Fan RPM Sensor           (Uniwill EC via ACPI-WMI, read-only DKMS driver) [sudo]",
+        "pt-BR": "Sensor de RPM            (EC Uniwill via ACPI-WMI, driver DKMS read-only) [sudo]",
+    },
     "opt_all": {
         "en": "Apply All Recommended    (--all)",
         "pt-BR": "Aplicar Todas Recomendadas (--all)",
@@ -213,6 +217,13 @@ def apply_turbo():
     run_script("manage-cpu-turbo.py", ["--interactive"])
     log_event("ok", "setup_turbo_applied")
 
+def apply_fan_sensor():
+    print(f"{UI.BOLD}==> [Configuração] Sensor de ventoinha Uniwill EC (RPM via ACPI-WMI){UI.RESET}" if i18n.lang == "pt-BR" else f"{UI.BOLD}==> [Setup] Uniwill EC fan sensor (RPM via ACPI-WMI){UI.RESET}")
+    if not run_script("manage-uniwill-hwmon.sh", ["install"]):
+        log_event("warn", "setup_fan_sensor_failed")
+        return
+    log_event("ok", "setup_fan_sensor_applied")
+
 
 def apply_all_detected(profile: Dict[str, Any]):
     apply_keyboard()
@@ -228,6 +239,10 @@ def apply_all_detected(profile: Dict[str, Any]):
 
     if profile.get("input", {}).get("is_tongfang_candidate") and not profile.get("input", {}).get("tongfang_grub_unlocked"):
         apply_tongfang()
+        print("")
+
+    if profile.get("input", {}).get("uniwill_ec_wmi") and not profile.get("input", {}).get("uniwill_inou0000_present") and not profile.get("input", {}).get("uniwill_hwmon_present"):
+        apply_fan_sensor()
         print("")
 
     if len(profile.get("wifi", {}).get("interfaces", [])) > 0:
@@ -298,6 +313,9 @@ def show_interactive_menu(profile: Dict[str, Any]):
     if inp.get("is_tongfang_candidate"):
         print(f"  9) {UI.SUCCESS}{i18n.t('opt_tongfang')}{UI.RESET}")
 
+    if inp.get("uniwill_ec_wmi") and not inp.get("uniwill_inou0000_present") and not inp.get("uniwill_hwmon_present"):
+        print(f"  F) {UI.SUCCESS}{i18n.t('opt_fansensor')}{UI.RESET}")
+
     if shutil.which("fastfetch"):
         print(f" 10) {UI.SUCCESS}{i18n.t('opt_fetch')}{UI.RESET}")
 
@@ -344,6 +362,8 @@ def show_interactive_menu(profile: Dict[str, Any]):
         apply_screen_60()
     elif ans == "9":
         apply_tongfang()
+    elif ans.lower() == "f":
+        apply_fan_sensor()
     elif ans == "10":
         apply_terminal_fetch()
     elif ans.lower() == "t":
@@ -381,6 +401,8 @@ def main():
             apply_screen_60()
         elif flag in ("--tongfang",):
             apply_tongfang()
+        elif flag in ("--fan-sensor", "--sensor"):
+            apply_fan_sensor()
         elif flag in ("--terminal-fetch", "--cosmetic"):
             apply_terminal_fetch()
         elif flag in ("--turbo", "--cpu-turbo", "-t"):

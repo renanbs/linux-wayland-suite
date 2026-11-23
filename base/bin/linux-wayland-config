@@ -53,6 +53,7 @@ usage() {
     echo "  battery-apply     Applies user-chosen battery optimizations (BATTERY_FIX_*)"
     echo "  battery-revert    Reverts the last battery-apply execution (or specific snapshot)"
     echo "  turbo [on|off|status|toggle|persist|watch]  CPU Turbo Boost & thermal management"
+    echo "  fan-sensor [status|install|uninstall]  Fan RPM/temps for Uniwill/Tongfang EC (DKMS, read-only)"
     echo "  smart-wifi-power  Dynamic Wi-Fi power management (AC vs Battery) (--apply/--remove/--sync/--status)"
     echo "  screen-hz [60|120|max]  Switches internal display refresh rate (60 Hz vs 120 Hz)"
     echo "  fix-tongfang      Unlocks i8042 keyboard matrix in GRUB for Tongfang/Avell laptops"
@@ -167,6 +168,15 @@ cmd_turbo() {
         bash "$SHARED_DIR/manage-cpu-turbo.sh" "$@"
     else
         echo -e "${RED}Erro: $SHARED_DIR/manage-cpu-turbo.py não encontrado.${NC}"
+        exit 1
+    fi
+}
+
+cmd_fan_sensor() {
+    if [ -f "$SHARED_DIR/manage-uniwill-hwmon.sh" ]; then
+        bash "$SHARED_DIR/manage-uniwill-hwmon.sh" "${1:---status}"
+    else
+        echo -e "${RED}Erro: $SHARED_DIR/manage-uniwill-hwmon.sh não encontrado.${NC}"
         exit 1
     fi
 }
@@ -597,6 +607,7 @@ dispatch() {
         battery-status) cmd_battery_status ;;
         battery-apply) cmd_battery_apply ;;
         battery-revert) cmd_battery_revert "${2:-}" ;;
+        fan-sensor|uniwill-hwmon) shift; cmd_fan_sensor "$@" ;;
         preflight) cmd_preflight ;;
         turbo|cpu-turbo) shift; cmd_turbo "$@" ;;
         turbo-on) cmd_turbo "--on" ;;

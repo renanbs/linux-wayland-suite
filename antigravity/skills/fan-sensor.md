@@ -1,0 +1,1 @@
+../../commands/fan-sensor.md

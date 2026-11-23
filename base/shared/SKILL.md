@@ -1,6 +1,6 @@
 ---
 name: linux-wayland-suite
-description: Comprehensive Linux Wayland configuration suite for KDE Plasma, GNOME, and multi-vendor hardware: keyboard shortcuts repair, Tongfang/Avell/Clevo matrix unlocking, smart dynamic keyboard power management, native cedilla on US-intl via the native pt_BR compose table (LC_CTYPE, no input method), Wayland clipboard repair, 3/4-finger touchpad gestures, Logitech MX Master 3S button/scroll configuration via logiops, and battery/power diagnostics.
+description: Comprehensive Linux Wayland configuration suite for KDE Plasma, GNOME, and multi-vendor hardware: keyboard shortcuts repair, Tongfang/Avell/Clevo matrix unlocking, smart dynamic keyboard power management, native cedilla on US-intl via the native pt_BR compose table (LC_CTYPE, no input method), Wayland clipboard repair, 3/4-finger touchpad gestures, Logitech MX Master 3S button/scroll configuration via logiops, battery/power diagnostics, and a read-only fan RPM/temperature sensor for Uniwill/Tongfang ECs over ACPI-WMI.
 ---
 
 # Linux Wayland Suite (Input, Hardware & Desktop Automation)
@@ -24,6 +24,7 @@ This skill provides automations and diagnostics to resolve common problems in th
 14. **Machine Profiling & Modular Setup (`/init` & `/setup`)**: `/init` (or `/scan`) performs non-destructive hardware inspection saving `~/.config/linux-wayland-suite/machine-profile.json`. `/setup` uses this profile to offer a contextual configuration wizard tailored to detected hardware.
 15. **Tongfang S3 Deep Sleep Resume Fix**: Hook in `/etc/systemd/system-sleep/90-kde-keyboard-resume.sh` issuing `rescan` to `/sys/devices/platform/i8042/serio0/drvctl` upon lid open.
 16. **Structured Event Logs and Historical Reporting**: Every execution records a run in `~/.local/state/linux-wayland-suite/runs/<timestamp>-<cmd>/` with `events.tsv`, `output.log`, and `meta.env`. `report` parses structured events to produce reproducible reports and actionable remediation advice.
+17. **Uniwill/Tongfang Fan RPM Sensor (`fan-sensor`)**: Read-only hwmon driver (`uniwill-ec-hwmon-dkms`, published on AUR) for ECs that are only reachable through the `AcpiTest_MULong` ACPI-WMI bridge (`ABBC0F6F-8EA1-11D1-00A0-C90629100000`, method 4) because the BIOS does not expose `INOU0000` — exactly the case where the in-tree `uniwill-laptop` driver cannot probe. Exposes `fan1_input`/`fan2_input` (RPM), `temp1_input`/`temp2_input` (CPU/GPU) and `pwm1`/`pwm2` to `sensors`, `coolercontrol` and any hwmon consumer; it never writes to the EC. `fan-sensor status|install|uninstall` manages the DKMS package, `/setup` offers it as option `F`, and `/init` records `uniwill_ec_wmi`, `uniwill_inou0000_present` and `uniwill_hwmon_present` in `machine-profile.json`.
 > **Evidence-First Verdict Output Format**: Every command in this suite reports in the format defined in `OUTPUT-CONTRACT.md` (**Verdict** $\to$ **Execution Breakdown** $\to$ **Ground Truth Evidence** $\to$ **Daily Impact** $\to$ **Action Required**), identical across Claude Code, Cursor, OMP, OpenCode, and Antigravity.
 
 > **Internationalization & Translation**: Internally, all commands, skills, contracts, and runlogs are maintained in English. The AI agent translates explanations and interaction dialogues into the user's selected language (`en` or `pt-BR`) as configured.
@@ -87,10 +88,12 @@ The environment variables `KDE_SUITE_LANG`, `SKIP_KEYBOARD`, `SKIP_GESTURES`, `S
 | `shared/test-keyboard.py` | Interactive real-time key event monitor (/dev/input/eventX) |
 | `shared/monitor-irq.py` | Hardware electric pulse monitor on IRQ 1 (i8042 keyboard) |
 | `shared/manage-keyboard-power.sh` | Dynamic keyboard power management (on standalone, auto with USB/BT keyboard) |
+| `shared/manage-uniwill-hwmon.sh` | Read-only fan RPM/temps sensor for Uniwill/Tongfang ECs over ACPI-WMI (`status`/`install`/`uninstall`, DKMS) |
 | `shared/preflight-base.sh` | Preflight checks for environment, DMI hardware, Plasma version, and D-Bus tools |
 | `bin/linux-wayland-config switch [br\|us]` | Immediate keyboard layout switching via D-Bus |
 | `bin/linux-wayland-config set-lang [en\|pt-BR]` | Saves user language preference |
 | `bin/linux-wayland-config screen-hz [60\|120]` | Switches internal display refresh rate |
+| `bin/linux-wayland-config fan-sensor [status\|install\|uninstall]` | Manages the Uniwill/Tongfang EC fan RPM/temp sensor (read-only hwmon, DKMS) |
 ---
 
 ## Quick CLI Usage

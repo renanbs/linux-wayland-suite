@@ -5,7 +5,7 @@
 [![KDE Plasma 6](https://img.shields.io/badge/KDE%20Plasma-6-blue.svg)](https://kde.org/plasma-desktop/)
 [![Wayland Ready](https://img.shields.io/badge/Wayland-Native-success.svg)](https://wayland.freedesktop.org/)
 [![Multi-Harness Plugin](https://img.shields.io/badge/AI%20Harnesses-OMP%20%7C%20Claude%20%7C%20Cursor%20%7C%20Antigravity%20%7C%20OpenCode-purple.svg)](#-installation--ai-tools-integration)
-[![Version](https://img.shields.io/badge/Version-2.12.1-brightgreen.svg)](package.json)
+[![Version](https://img.shields.io/badge/Version-2.13.0-brightgreen.svg)](package.json)
 
 **[English](README.md)** | **[Português do Brasil](README.pt-BR.md)**
 
@@ -138,6 +138,7 @@ cd ~/src/linux-wayland-suite
 | `linux-wayland-config battery-status` | `make battery-status` | Read-only battery, hybrid GPU, and PCIe ASPM diagnostic |
 | `linux-wayland-config battery-apply` | `make battery-apply` | Applies user-chosen battery optimizations (`BATTERY_FIX_*`) |
 | `linux-wayland-config turbo` | `make turbo` | CPU Turbo Boost management, quiet mode & runaway process watchdog |
+| `linux-wayland-config fan-sensor [status\|install\|uninstall]` | `make fan-sensor` | Read-only fan RPM, CPU/GPU temps and PWM for Uniwill/Tongfang ECs over ACPI-WMI (DKMS) |
 | `linux-wayland-config gestures` | `make gestures` | Configures 3 & 4-finger touchpad gestures (`libinput-gestures`) |
 | `linux-wayland-config mouse` | `make mouse` | Configures Logitech MX Master 3S thumb button and SmartShift via `logiops` |
 | `linux-wayland-config test-keyboard` | `make test-keyboard` | Real-time interactive key event monitor (`/dev/input/eventX`) |
@@ -178,7 +179,7 @@ omp plugin install linux-wayland-suite@linux-wayland-suite
 omp plugin marketplace update linux-wayland-suite
 omp plugin upgrade linux-wayland-suite@linux-wayland-suite
 ```
-* **Available Slash Commands:** `/linux-wayland-suite:status`, `/linux-wayland-suite:init`, `/linux-wayland-suite:patch-cedilla`, `/linux-wayland-suite:fix-keyboard`, `/linux-wayland-suite:fix-tongfang`, `/linux-wayland-suite:smart-keyboard-power`, `/linux-wayland-suite:configure-harness`, `/linux-wayland-suite:battery`, `/linux-wayland-suite:turbo`, `/linux-wayland-suite:install`, `/linux-wayland-suite:report`, `/linux-wayland-suite:help`, `/linux-wayland-suite:upgrade`.
+* **Available Slash Commands:** `/linux-wayland-suite:status`, `/linux-wayland-suite:init`, `/linux-wayland-suite:patch-cedilla`, `/linux-wayland-suite:fix-keyboard`, `/linux-wayland-suite:fix-tongfang`, `/linux-wayland-suite:smart-keyboard-power`, `/linux-wayland-suite:configure-harness`, `/linux-wayland-suite:battery`, `/linux-wayland-suite:turbo`, `/linux-wayland-suite:fan-sensor`, `/linux-wayland-suite:install`, `/linux-wayland-suite:report`, `/linux-wayland-suite:help`, `/linux-wayland-suite:upgrade`.
 * **Skills:** `skill://linux-wayland-suite`, `skill://linux-wayland-suite-architecture`.
 
 ### 2. Claude Code

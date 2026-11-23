@@ -120,6 +120,10 @@ STRINGS = {
         "en": "Tongfang/Avell Chassis: Detected (GRUB Unlock: {status})",
         "pt-BR": "Chassis Tongfang/Avell: Detectado (Desbloqueio GRUB: {status})",
     },
+    "uniwill_hwmon_detected": {
+        "en": "Uniwill EC fan sensor: Detected (hwmon: {status})",
+        "pt-BR": "Sensor de ventoinha Uniwill EC: Detectado (hwmon: {status})",
+    },
     "touchpad": {"en": "Touchpad: {state}", "pt-BR": "Touchpad: {state}"},
     "mouse_mx": {
         "en": "Logitech MX Master 3S Mouse: {state}",
@@ -503,6 +507,27 @@ def main():
         tf_status = (UI.SUCCESS + i18n.t("ok_tag") + UI.RESET) if tongfang_unlocked else (UI.WARNING + i18n.t("pending_tag") + UI.RESET)
         print(f"  • {i18n.t('tongfang_detected', status=tf_status)}")
 
+    # Uniwill fan sensor support: BIOSes without INOU0000 expose the EC only
+    # through the AcpiTest_MULong WMI interface (ABBC0F6F-...).
+    wmi_dir = "/sys/bus/wmi/devices"
+    wmi_devices = os.listdir(wmi_dir) if os.path.isdir(wmi_dir) else []
+    uniwill_ec_wmi = any(name.startswith("ABBC0F6F-") for name in wmi_devices) and is_tongfang
+    uniwill_inou_present = os.path.isdir("/sys/bus/acpi/devices/INOU0000:00")
+    uniwill_hwmon_present = False
+    for hwmon_dir in glob.glob("/sys/class/hwmon/hwmon*"):
+        try:
+            with open(os.path.join(hwmon_dir, "name"), encoding="utf-8") as fh:
+                if fh.read().strip() == "uniwill_ec":
+                    uniwill_hwmon_present = True
+                    break
+        except OSError:
+            continue
+    uniwill_hwmon_dkms = os.path.isdir("/var/lib/dkms/uniwill-ec-hwmon")
+
+    if uniwill_ec_wmi:
+        sensor_state = (UI.SUCCESS + i18n.t("ok_tag") + UI.RESET) if uniwill_hwmon_present else (UI.WARNING + i18n.t("pending_tag") + UI.RESET)
+        print(f"  • {i18n.t('uniwill_hwmon_detected', status=sensor_state)}")
+
     # Touchpad
     touchpad_present = False
     mx_master_present = False
@@ -577,6 +602,10 @@ def main():
             "i8042_present": i8042_present,
             "is_tongfang_candidate": is_tongfang,
             "tongfang_grub_unlocked": tongfang_unlocked,
+            "uniwill_ec_wmi": uniwill_ec_wmi,
+            "uniwill_inou0000_present": uniwill_inou_present,
+            "uniwill_hwmon_present": uniwill_hwmon_present,
+            "uniwill_hwmon_dkms": uniwill_hwmon_dkms,
             "smart_keyboard_power_installed": os.path.isfile("/etc/udev/rules.d/90-kde-smart-keyboard-power.rules"),
             "touchpad_present": touchpad_present,
             "mx_master_present": mx_master_present,
